@@ -1,0 +1,120 @@
+{
+  "_metadata": {
+    "dataset_type": "SYNTHETIC TEST DATA",
+    "warning": "NOT REAL MARKET DATA. FOR TESTING AND UNIT TEST VERIFICATION ONLY.",
+    "standard_unit": "INR/Quintal",
+    "created_for": "AgriSense Milestone 15 Market Intelligence Unit Tests"
+  },
+  "records": [
+    {
+      "crop": "Tomato",
+      "market": "Kolar",
+      "state": "Karnataka",
+      "district": "Kolar",
+      "date": "2026-09-10",
+      "min_price": 1800.0,
+      "max_price": 2200.0,
+      "modal_price": 2000.0,
+      "unit": "INR/Quintal"
+    },
+    {
+      "crop": "Tomato",
+      "market": "Kolar",
+      "state": "Karnataka",
+      "district": "Kolar",
+      "date": "2026-09-11",
+      "min_price": 1900.0,
+      "max_price": 2300.0,
+      "modal_price": 2100.0,
+      "unit": "INR/Quintal"
+    },
+    {
+      "crop": "Tomato",
+      "market": "Kolar",
+      "state": "Karnataka",
+      "district": "Kolar",
+      "date": "2026-09-12",
+      "min_price": 2100.0,
+      "max_price": 2500.0,
+      "modal_price": 2300.0,
+      "unit": "INR/Quintal"
+    },
+    {
+      "crop": "Potato",
+      "market": "Agra",
+      "state": "Uttar Pradesh",
+      "district": "Agra",
+      "date": "2026-09-10",
+      "min_price": 1400.0,
+      "max_price": 1600.0,
+      "modal_price": 1500.0,
+      "unit": "INR/Quintal"
+    },
+    {
+      "crop": "Potato",
+      "market": "Agra",
+      "state": "Uttar Pradesh",
+      "district": "Agra",
+      "date": "2026-09-11",
+      "min_price": 1300.0,
+      "max_price": 1500.0,
+      "modal_price": 1380.0,
+      "unit": "INR/Quintal"
+    },
+    {
+      "crop": "Potato",
+      "market": "Agra",
+      "state": "Uttar Pradesh",
+      "district": "Agra",
+      "date": "2026-09-12",
+      "min_price": 1150.0,
+      "max_price": 1350.0,
+      "modal_price": 1250.0,
+      "unit": "INR/Quintal"
+    },
+    {
+      "crop": "Wheat",
+      "market": "Khanna",
+      "state": "Punjab",
+      "district": "Ludhiana",
+      "date": "2026-09-10",
+      "min_price": 2275.0,
+      "max_price": 2325.0,
+      "modal_price": 2300.0,
+      "unit": "INR/Quintal"
+    },
+    {
+      "crop": "Wheat",
+      "market": "Khanna",
+      "state": "Punjab",
+      "district": "Ludhiana",
+      "date": "2026-09-11",
+      "min_price": 2280.0,
+      "max_price": 2330.0,
+      "modal_price": 2310.0,
+      "unit": "INR/Quintal"
+    },
+    {
+      "crop": "Wheat",
+      "market": "Khanna",
+      "state": "Punjab",
+      "district": "Ludhiana",
+      "date": "2026-09-12",
+      "min_price": 2270.0,
+      "max_price": 2320.0,
+      "modal_price": 2295.0,
+      "unit": "INR/Quintal"
+    },
+    {
+      "crop": "Rice",
+      "market": "Burdwan",
+      "state": "West Bengal",
+      "district": "Purba Bardhaman",
+      "date": "2026-09-12",
+      "min_price": 2800.0,
+      "max_price": 3100.0,
+      "modal_price": 2950.0,
+      "unit": "INR/Quintal"
+    }
+  ]
+}

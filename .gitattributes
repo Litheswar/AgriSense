@@ -1,0 +1,4 @@
+# Git LFS — AgriSense
+# Track only the large disease detection model (28.9 MB) via LFS.
+# Other .keras files (e.g. crop recommendation neural_network_model.keras at 64 KB) remain normal Git.
+backend/models/disease_detection/saved_model/disease_model.keras filter=lfs diff=lfs merge=lfs -text

@@ -1,0 +1,28 @@
+{
+  "name": "agrisense-backend",
+  "version": "1.0.0",
+  "description": "AgriSense Backend Integration Layer (Node.js Express + Python AI)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test_integration.js && node tests/test_farm.js && node tests/test_shared_farm_state.js",
+    "test:ai": "node test_integration.js",
+    "test:farm": "node tests/test_farm.js",
+    "test:persistence": "node tests/test_persistence_atlas.js",
+    "test:shared-state": "node tests/test_shared_farm_state.js"
+  },
+  "keywords": [
+    "agrisense",
+    "agriculture",
+    "ai",
+    "express"
+  ],
+  "author": "AgriSense Team",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "mongoose": "^9.10.0"
+  }
+}

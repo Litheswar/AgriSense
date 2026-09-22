@@ -1,0 +1,32 @@
+{
+  "status": "PROTOTYPE_ASSUMPTION",
+  "requires_official_api_key": false,
+  "note": "Configuration for Market Intelligence Engine. Thresholds and scoring logic are prototype assumptions for ranking crops.",
+  "official_data_source": {
+    "source_name": "Agmarknet / Open Government Data (OGD) Platform India (data.gov.in)",
+    "portal_url": "https://data.gov.in / https://agmarknet.gov.in",
+    "dataset_title": "Current Daily Price of Various Commodities from Agricultural Markets (Mandi) across India",
+    "standard_unit": "INR/Quintal",
+    "env_api_key_var": "DATA_GOV_IN_API_KEY"
+  },
+  "analysis_parameters": {
+    "trend_threshold_percent": 5.0,
+    "min_history_points_for_trend": 2,
+    "default_currency": "INR",
+    "supported_units": ["INR/Quintal", "INR/kg", "INR/Ton"]
+  },
+  "market_score_parameters": {
+    "base_score": 50.0,
+    "trend_bonus": {
+      "Increasing": 25.0,
+      "Stable": 10.0,
+      "Decreasing": -25.0,
+      "Unavailable": 0.0
+    },
+    "score_range": {
+      "min": 0.0,
+      "max": 100.0
+    },
+    "disclaimer": "Market score is a heuristic prototype decision signal for crop ranking. It is NOT an economic probability or future price forecast."
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "model_name": "MobileNetV2 Transfer Learning",
+  "task": "Plant Disease Classification (10 Classes)",
+  "dataset": "PlantVillage Multi-Crop Core (Potato, Corn, Tomato)",
+  "architecture": {
+    "backbone": "MobileNetV2 (ImageNet pretrained)",
+    "head": "GAP \u2192 Dense(256) \u2192 BN \u2192 Dropout(0.3) \u2192 Dense(128) \u2192 BN \u2192 Dropout(0.3) \u2192 Dense(10, softmax)",
+    "fine_tune_from_layer": 100,
+    "total_backbone_layers": 154,
+    "total_params": 2621642,
+    "input_shape": [
+      224,
+      224,
+      3
+    ]
+  },
+  "training": {
+    "phase1_head_only_epochs": 13,
+    "phase2_fine_tune_epochs": 15,
+    "batch_size": 32,
+    "phase1_learning_rate": 0.001,
+    "phase2_learning_rate": 0.0001,
+    "class_weights": {
+      "0": 2.0454038997214483,
+      "1": 0.8804556354916068,
+      "2": 1.0642028985507246,
+      "3": 0.9031980319803198,
+      "4": 1.049,
+      "5": 1.049,
+      "6": 6.9273584905660375,
+      "7": 1.049,
+      "8": 0.5516904583020286,
+      "9": 0.6615315315315315
+    },
+    "augmentation": {
+      "horizontal_flip": true,
+      "vertical_flip": true,
+      "random_rotation_factor": 0.08,
+      "random_zoom_factor": 0.08,
+      "random_contrast_factor": 0.1
+    }
+  },
+  "validation_results": {
+    "accuracy": 0.9764780673871583,
+    "macro_f1": 0.9714083700470603,
+    "weighted_f1": 0.9763643756365638,
+    "total_errors": 37,
+    "total_samples": 1573
+  },
+  "test_results": {
+    "accuracy": 0.9695044472681067,
+    "macro_f1": 0.9580950303390697,
+    "weighted_f1": 0.9693404418811489,
+    "total_errors": 48,
+    "total_samples": 1574
+  },
+  "class_mapping": {
+    "0": "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
+    "1": "Corn_(maize)___Common_rust_",
+    "2": "Corn_(maize)___Northern_Leaf_Blight",
+    "3": "Corn_(maize)___healthy",
+    "4": "Potato___Early_blight",
+    "5": "Potato___Late_blight",
+    "6": "Potato___healthy",
+    "7": "Tomato___Early_blight",
+    "8": "Tomato___Late_blight",
+    "9": "Tomato___healthy"
+  },
+  "training_time_seconds": 5401.7,
+  "tensorflow_version": "2.21.0",
+  "keras_version": "3.14.1"
+}

@@ -1,0 +1,80 @@
+{
+  "selected_model": "Random Forest",
+  "selection_timestamp": "2026-09-11T17:30:49.435595Z",
+  "model_artifact_path": "saved_model/random_forest_model.pkl",
+  "model_format": "joblib (.pkl)",
+  "feature_names": [
+    "N",
+    "P",
+    "K",
+    "temperature",
+    "humidity",
+    "ph",
+    "rainfall"
+  ],
+  "num_classes": 22,
+  "classes": [
+    "apple",
+    "banana",
+    "blackgram",
+    "chickpea",
+    "coconut",
+    "coffee",
+    "cotton",
+    "grapes",
+    "jute",
+    "kidneybeans",
+    "lentil",
+    "maize",
+    "mango",
+    "mothbeans",
+    "mungbean",
+    "muskmelon",
+    "orange",
+    "papaya",
+    "pigeonpeas",
+    "pomegranate",
+    "rice",
+    "watermelon"
+  ],
+  "test_dataset_size": 330,
+  "validation_metrics": {
+    "val_accuracy": 0.9909,
+    "val_macro_f1": 0.9909
+  },
+  "test_metrics": {
+    "test_accuracy": 0.997,
+    "test_macro_precision": 0.9972,
+    "test_macro_recall": 0.997,
+    "test_macro_f1": 0.997,
+    "test_weighted_f1": 0.997,
+    "test_errors_count": 1
+  },
+  "all_candidates_comparison": [
+    {
+      "model": "Random Forest",
+      "test_accuracy": 0.997,
+      "test_macro_f1": 0.997,
+      "val_accuracy": 0.9909,
+      "val_macro_f1": 0.9909,
+      "artifact_size_mb": 3.364
+    },
+    {
+      "model": "XGBoost",
+      "test_accuracy": 0.9848,
+      "test_macro_f1": 0.9847,
+      "val_accuracy": 0.9879,
+      "val_macro_f1": 0.9878,
+      "artifact_size_mb": 1.489
+    },
+    {
+      "model": "Neural Network",
+      "test_accuracy": 0.9818,
+      "test_macro_f1": 0.9818,
+      "val_accuracy": 0.9848,
+      "val_macro_f1": 0.9848,
+      "artifact_size_mb": 0.062
+    }
+  ],
+  "reason_for_selection": "Random Forest demonstrated the strongest balanced classification performance across all 22 crop categories with a Test Macro F1 of 99.70% and Test Accuracy of 99.70%. It displayed exceptional generalization from validation to test split without degradation."
+}

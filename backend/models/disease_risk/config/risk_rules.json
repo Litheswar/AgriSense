@@ -1,0 +1,35 @@
+{
+  "status": "PROTOTYPE_ASSUMPTION",
+  "requires_agronomic_validation": true,
+  "note": "All thresholds and weights here are generic prototype assumptions. They are NOT scientifically validated for specific crop-disease combinations, regions, or growth stages. A plant pathologist or agronomist must review and replace these with validated values before production use.",
+  "validation": {
+    "temperature_min_celsius": -20.0,
+    "temperature_max_celsius": 60.0
+  },
+  "risk_signals": {
+    "humidity": {
+      "elevated_threshold_percent": 75.0,
+      "high_threshold_percent": 90.0,
+      "weight": 0.35
+    },
+    "temperature": {
+      "favorable_min_celsius": 15.0,
+      "favorable_max_celsius": 30.0,
+      "weight": 0.25
+    },
+    "rainfall": {
+      "meaningful_mm": 5.0,
+      "elevated_mm": 15.0,
+      "weight": 0.25
+    },
+    "recent_rainfall": {
+      "meaningful_mm": 10.0,
+      "elevated_mm": 25.0,
+      "weight": 0.15
+    }
+  },
+  "risk_classification": {
+    "low_max_score": 0.35,
+    "medium_max_score": 0.65
+  }
+}

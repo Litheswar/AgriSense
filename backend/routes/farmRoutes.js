@@ -1,0 +1,20 @@
+/**
+ * AgriSense — Farm Routes (Milestone 18).
+ *
+ * Defines REST endpoints for Shared Farm State CRUD operations.
+ */
+
+const express = require('express');
+const router = express.Router();
+const farmController = require('../controllers/farmController');
+
+// Farm CRUD
+router.post('/', farmController.createFarm);
+router.get('/', farmController.listFarms);
+router.get('/:farmId/shared-state', farmController.getSharedFarmState);
+router.get('/:farmId', farmController.getFarm);
+router.patch('/:farmId', farmController.updateFarm);
+router.put('/:farmId', farmController.updateFarm);
+router.delete('/:farmId', farmController.deleteFarm);
+
+module.exports = router;

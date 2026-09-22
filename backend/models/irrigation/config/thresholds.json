@@ -1,0 +1,16 @@
+{
+  "status": "PROTOTYPE ASSUMPTIONS",
+  "note": "These values are currently configurable placeholders and require validation against specific crops and regional agronomic data. They should not be presented as scientifically validated thresholds without further research.",
+  "soil_moisture": {
+    "dry_threshold_percent": 30.0,
+    "adequate_threshold_percent": 60.0
+  },
+  "weather_forecast": {
+    "meaningful_rain_probability_percent": 60.0,
+    "substantial_expected_rainfall_mm": 5.0
+  },
+  "environmental_demand": {
+    "high_temperature_celsius": 35.0,
+    "low_humidity_percent": 40.0
+  }
+}

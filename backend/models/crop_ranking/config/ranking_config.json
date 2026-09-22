@@ -1,0 +1,18 @@
+{
+  "status": "PROTOTYPE_ASSUMPTION",
+  "requires_validation": true,
+  "note": "Prototype weights and scoring configuration for Crop Ranking Engine. Weights reflect decision-support heuristic assumptions and are NOT scientifically calibrated agronomic or economic guarantees.",
+  "weights": {
+    "agronomic": 0.7,
+    "market": 0.3
+  },
+  "missing_market_data_policy": {
+    "policy": "FALLBACK_AGRONOMIC_PRIMARY",
+    "description": "When market data is unavailable for a candidate crop, the combined score equals the normalized agronomic signal directly (no artificial penalty to market score 0). The ranking metadata explicitly marks market contribution as unavailable."
+  },
+  "signal_normalization": {
+    "agronomic_scale": "0.0_to_1.0",
+    "market_scale": "0.0_to_100.0_normalized_to_0.0_to_1.0"
+  },
+  "disclaimer": "Crop ranking is a prototype decision-support tool. Crop model confidence reflects classifier probability rather than comprehensive agronomic suitability, and market scores reflect historical signals rather than guaranteed future prices or profitability."
+}
