@@ -124,6 +124,8 @@ const WeatherSchema = new Schema({
     min: [0, 'Expected rainfall cannot be negative'],
     default: null
   },
+  source: { type: String, trim: true, default: null },
+  fetchedAt: { type: Date, default: null },
   recordedAt: {
     type: Date,
     default: Date.now

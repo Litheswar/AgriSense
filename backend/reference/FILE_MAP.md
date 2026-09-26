@@ -48,17 +48,30 @@ backend/
 │
 ├── routes/                             # Express route definitions
 │   ├── aiRoutes.js                     # /api/ai endpoints (health, predict, 7 AI tasks)
-│   └── farmRoutes.js                   # /api/farms endpoints (CRUD and /:farmId/shared-state)
+│   └── farmRoutes.js                   # /api/farms endpoints (CRUD, shared-state, crop-rec, irrigation, fertilizer, disease-risk, market, crop-ranking)
 │
 ├── services/                           # Business logic & IPC execution
 │   ├── aiService.js                    # Child process spawning, streaming, and error normalization
 │   ├── farmService.js                  # Dual-mode repository (live MongoDB or memory-store Map)
-│   └── sharedFarmStateService.js       # Unified service boundary providing canonical Shared Farm State
+│   ├── sharedFarmStateService.js       # Unified service boundary providing canonical Shared Farm State
+│   ├── farmCropRecommendationService.js # Integration service connecting Shared Farm State to Crop Recommendation ML model
+│   ├── farmIrrigationService.js        # Integration service connecting Shared Farm State to Irrigation Decision Engine
+│   ├── farmFertilizerService.js        # Integration service connecting Shared Farm State to Fertilizer Decision Engine
+│   ├── farmDiseaseRiskService.js       # Integration service connecting Shared Farm State to Disease Risk Decision Engine
+│   ├── farmMarketService.js            # Integration service connecting Shared Farm State to Market Intelligence Engine
+│   └── farmCropRankingService.js       # Integration service connecting Shared Farm State to Crop Ranking Decision Engine
 │
 ├── tests/                              # Specialized test suites
 │   ├── test_farm.js                    # 10-test Farm CRUD, validation, and Shared State suite
 │   ├── test_persistence_atlas.js      # 7-test MongoDB Atlas persistence & process restart suite
-│   └── test_shared_farm_state.js      # 7-test Shared Farm State Service & REST endpoint suite
+│   ├── test_shared_farm_state.js      # 7-test Shared Farm State Service & REST endpoint suite
+│   ├── test_farm_crop_recommendation.js # 10-test Farm Shared State to Crop Recommendation integration suite
+│   ├── test_farm_irrigation.js         # 13-test Farm Shared State to Irrigation Decision Engine integration suite
+│   ├── test_farm_fertilizer.js         # 18-test Farm Shared State to Fertilizer Decision Engine integration suite
+│   ├── test_farm_disease_risk.js       # 17-test Farm Shared State to Disease Risk Engine integration suite
+│   ├── test_farm_market.js             # 17-test Farm Shared State to Market Intelligence Engine integration suite
+│   ├── test_farm_crop_ranking.js       # 19-test Farm Shared State to Crop Ranking Engine integration suite
+│   └── test_disease_detection_farm_context.js # 13-test Disease Detection → Farm Disease Context integration suite
 │
 ├── reference/                          # 14-File Authoritative Reference Documentation Hub
 │   ├── README.md                       # Documentation navigation hub and status legend
@@ -71,7 +84,7 @@ backend/
 │   ├── API_INTEGRATIONS.md             # Third-party integrations (Market & Weather status)
 │   ├── DECISION_ENGINES.md             # Rule-based decision engines specifications
 │   ├── BACKEND_INTEGRATION.md          # REST API endpoints, payloads, and error codes
-│   ├── COMPLETED_MILESTONES.md         # Chronological milestones 1 through 18B
+│   ├── COMPLETED_MILESTONES.md         # Chronological milestones 1 through 18J
 │   ├── PENDING_WORK.md                 # Concrete roadmap for upcoming engineering tasks
 │   ├── ASSUMPTIONS_AND_LIMITATIONS.md  # Safety, agronomic, and boundary caveats
 │   └── FILE_MAP.md                     # This functional repository map

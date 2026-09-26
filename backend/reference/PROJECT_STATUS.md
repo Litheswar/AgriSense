@@ -106,6 +106,13 @@
 | Shared State Service | `[IMPLEMENTED]` | `backend/services/sharedFarmStateService.js` retrieves state via `farmService`. |
 | Farm CRUD & State API | `[IMPLEMENTED]` | `backend/controllers/farmController.js` and `backend/routes/farmRoutes.js`. |
 | Shared State Tests | `[VERIFIED]` | `node backend/tests/test_shared_farm_state.js` passes 7/7 tests (including real Atlas). |
+| Crop Recommendation Integration | `[IMPLEMENTED AND VERIFIED]` | `backend/services/farmCropRecommendationService.js` connects Shared Farm State to Random Forest model (10/10 tests pass). |
+| Irrigation Integration | `[IMPLEMENTED AND VERIFIED]` | `backend/services/farmIrrigationService.js` connects Shared Farm State to Irrigation Decision Engine (13/13 tests pass). |
+| Fertilizer Integration | `[IMPLEMENTED AND VERIFIED]` | `backend/services/farmFertilizerService.js` connects Shared Farm State to Fertilizer Decision Engine (18/18 tests pass). |
+| Disease Risk Integration | `[IMPLEMENTED AND VERIFIED]` | `backend/services/farmDiseaseRiskService.js` connects Shared Farm State to Disease Risk Engine (17/17 tests pass). |
+| Market Integration | `[IMPLEMENTED AND VERIFIED]` | `backend/services/farmMarketService.js` connects Shared Farm State to Market Intelligence Engine (17/17 tests pass). |
+| Crop Ranking Integration | `[IMPLEMENTED AND VERIFIED]` | `backend/services/farmCropRankingService.js` connects Shared Farm State to Crop Ranking Decision Engine (19/19 tests pass). |
+| Disease Context Integration | `[IMPLEMENTED AND VERIFIED]` | `POST /api/ai/disease-detection` with `farmId` bridges detection to `Farm.diseaseContext` (13/13 tests pass). |
 | Live MongoDB Atlas | `[VERIFIED]` | Live MongoDB Atlas cluster connected and verified with real CRUD operations. |
 
 ---
@@ -124,4 +131,11 @@
 | Node.js: AI Integration Suite | 13 tests | 13 | 0 | `[PASS]` |
 | Node.js: Farm CRUD Suite | 10 tests | 10 | 0 | `[PASS]` |
 | Node.js: Shared Farm State Suite | 7 tests | 7 | 0 | `[PASS]` |
-| **Combined (`npm test`)** | **30 tests** | **30** | **0** | **`[100% PASS]`** |
+| Node.js: Farm Crop Rec Integration | 10 tests | 10 | 0 | `[PASS]` |
+| Node.js: Farm Irrigation Integration | 13 tests | 13 | 0 | `[PASS]` |
+| Node.js: Farm Fertilizer Integration | 18 tests | 18 | 0 | `[PASS]` |
+| Node.js: Farm Disease Risk Integration | 17 tests | 17 | 0 | `[PASS]` |
+| Node.js: Farm Market Integration | 17 tests | 17 | 0 | `[PASS]` |
+| Node.js: Farm Crop Ranking Integration | 19 tests | 19 | 0 | `[PASS]` |
+| Node.js: Disease Context Integration | 13 tests | 13 | 0 | `[PASS]` |
+| **Combined (`npm test`)** | **137 tests** | **137** | **0** | **`[100% PASS]`** |

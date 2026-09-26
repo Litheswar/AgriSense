@@ -65,13 +65,20 @@ The Node.js tier manages network connectivity, CORS headers, input parsing, HTTP
   - `db.js`: Mongoose connection manager with 5,000ms server selection timeout and error-trapped offline fallback.
 - `routes/`:
   - `aiRoutes.js`: Exposes `/api/ai/health`, `/api/ai/predict`, and dedicated task endpoints (`/crop-recommendation`, `/disease-detection`, `/irrigation`, `/fertilizer`, `/disease-risk`, `/market`, `/crop-ranking`).
-  - `farmRoutes.js`: Exposes RESTful CRUD operations (`POST /`, `GET /`, `GET /:id`, `PATCH /:id`, `DELETE /:id`).
+  - `farmRoutes.js`: Exposes RESTful CRUD operations (`POST /`, `GET /`, `GET /:id`, `GET /:id/shared-state`, `GET /:id/crop-recommendation`, `GET /:id/irrigation`, `GET /:id/fertilizer`, `GET /:id/disease-risk`, `GET /:id/market`, `GET /:id/crop-ranking`, `PATCH /:id`, `DELETE /:id`).
 - `controllers/`:
   - `aiController.js`: Translates Express request payloads into task parameters, invoking `aiService`.
-  - `farmController.js`: Maps HTTP bodies into `farmService` calls, formatting responses with embedded `sharedFarmState`.
+  - `farmController.js`: Maps HTTP bodies into `farmService`, `sharedFarmStateService`, `farmCropRecommendationService`, `farmIrrigationService`, `farmFertilizerService`, `farmDiseaseRiskService`, `farmMarketService`, and `farmCropRankingService` calls.
 - `services/`:
   - `aiService.js`: Encapsulates child process spawning, stdin pipe serialization, stdout chunk accumulation, error conversion, and execution timeouts.
   - `farmService.js`: Business logic layer implementing a dual-mode repository (live MongoDB when connected, in-memory `Map` when offline).
+  - `sharedFarmStateService.js`: Canonical service retrieving a persisted Farm and formatting normalized Shared Farm State.
+  - `farmCropRecommendationService.js`: Orchestrates Shared Farm State retrieval, feature validation [N, P, K, temperature, humidity, ph, rainfall], and execution of existing Random Forest model via `aiService`.
+  - `farmIrrigationService.js`: Orchestrates Shared Farm State retrieval, feature validation [crop, growth_stage, soil_moisture, temperature, humidity, rain_probability, expected_rainfall], and execution of existing Irrigation Decision Engine via `aiService`.
+  - `farmFertilizerService.js`: Orchestrates Shared Farm State retrieval, feature validation [N, P, K, ph, crop, growth_stage, disease_status], and execution of existing Fertilizer Decision Engine via `aiService`.
+  - `farmDiseaseRiskService.js`: Orchestrates Shared Farm State retrieval, feature validation [crop, growth_stage, temperature, humidity, rainfall, recent_rainfall], and execution of existing Disease Risk Decision Engine via `aiService`.
+  - `farmMarketService.js`: Orchestrates Shared Farm State retrieval, feature validation [crop, market, state], and execution of existing Market Intelligence Engine via `aiService`.
+  - `farmCropRankingService.js`: Orchestrates Shared Farm State retrieval, agronomic feature validation [N, P, K, temp, humidity, ph, rainfall], Crop Recommendation inference, market context extraction, and multi-criteria Crop Ranking Decision Engine execution via `aiService`.
 
 ---
 

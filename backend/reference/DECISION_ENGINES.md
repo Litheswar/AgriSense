@@ -12,14 +12,15 @@ The Irrigation Engine evaluates whether a crop requires supplemental watering ba
 
 - **Location**: `backend/models/irrigation/engine/irrigation_engine.py`
 - **Configuration**: `backend/models/irrigation/config/thresholds.json`
+- **Integration Service**: `backend/services/farmIrrigationService.js` (`GET /api/farms/:farmId/irrigation`)
 - **Inputs**:
-  - `crop` (string)
-  - `growth_stage` (string)
-  - `soil_moisture` (float, 0–100%)
-  - `temperature` (float, °C)
-  - `humidity` (float, 0–100%)
-  - `rain_probability` (float, 0–100%)
-  - `expected_rainfall` (float, mm)
+  - `crop` (string, from `sharedState.crop.name`)
+  - `growth_stage` (string, from `sharedState.crop.growthStage`)
+  - `soil_moisture` (float 0–100%, from `sharedState.fieldConditions.soilMoisture`)
+  - `temperature` (float °C, from `sharedState.weather.temperature`)
+  - `humidity` (float 0–100%, from `sharedState.weather.humidity`)
+  - `rain_probability` (float 0–100%, from `sharedState.weather.rainProbability`)
+  - `expected_rainfall` (float mm, from `sharedState.weather.expectedRainfall`)
 - **Outputs**:
   - `irrigation_required` (boolean)
   - `urgency` ('low', 'medium', 'high')
@@ -31,7 +32,7 @@ The Irrigation Engine evaluates whether a crop requires supplemental watering ba
   3. If soil is dry and no rain is expected:
      - Under high atmospheric demand (`temperature > 35°C` AND `humidity < 40%`), triggers `urgency: high`.
      - Otherwise triggers `urgency: medium`.
-- **Caveats**: Thresholds are prototype defaults and must be tailored to soil texture (clay vs sand) and crop coefficient ($K_c$) curves.
+- **Caveats**: Thresholds are prototype defaults and must be tailored to soil texture (clay vs sand) and crop coefficient ($K_c$) curves. Weather inputs are supplied via Shared Farm State; live weather API integration remains a separate future milestone.
 
 ---
 
@@ -73,6 +74,7 @@ The Disease Risk Engine estimates the environmental predisposition for fungal an
 
 - **Location**: `backend/models/disease_risk/engine/disease_risk_engine.py`
 - **Configuration**: `backend/models/disease_risk/config/risk_rules.json`
+- **Integration Service**: `backend/services/farmDiseaseRiskService.js` (`GET /api/farms/:farmId/disease-risk`)
 - **Inputs**:
   - `crop` (string)
   - `growth_stage` (string)
@@ -105,6 +107,7 @@ The Disease Risk Engine estimates the environmental predisposition for fungal an
 The Market Intelligence Engine analyzes historical mandi price records to compute price trends, statistical ranges, and a standardized 0–100 market favorability score.
 
 - **Location**: `backend/models/market/engine/market_engine.py`
+- **Integration Service**: `backend/services/farmMarketService.js` (`GET /api/farms/:farmId/market`)
 - **Inputs**: `crop` (string), `market` (string), `state` (optional string).
 - **Outputs**:
   - `current_price`: Latest chronological modal price observation (INR/Quintal).
@@ -127,6 +130,7 @@ The Market Intelligence Engine analyzes historical mandi price records to comput
 The Crop Ranking Engine resolves the trade-off between biological agronomic suitability and local economic return, generating an integrated recommendation list.
 
 - **Location**: `backend/models/crop_ranking/engine/crop_ranking_engine.py`
+- **Integration Service**: `backend/services/farmCropRankingService.js` (`GET /api/farms/:farmId/crop-ranking`)
 - **Inputs**:
   - Candidate crops with agronomic probabilities (from `CropRecommender.predict` or custom array)
   - `market_context` (`{ market, state, district }`)

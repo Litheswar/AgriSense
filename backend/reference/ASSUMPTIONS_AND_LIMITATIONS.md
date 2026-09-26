@@ -44,5 +44,6 @@
 ### 3.2 Unverified Live Market API
 - **Current State**: `AgmarknetApiProvider` is coded, but in the absence of a configured `DATA_GOV_IN_API_KEY`, the application falls back to `LocalMarketDataProvider`. Live third-party HTTP communication has not been verified.
 
-### 3.3 MongoDB Atlas Connectivity & IP Whitelisting Gate
-- **Current State**: MongoDB Atlas cluster configuration and Mongoose SRV connection strings are implemented in `backend/.env` with masked credential logging. However, the Atlas cluster (`agrisense.e4pyxxk.mongodb.net`) restricts incoming connections via Atlas Network Access IP whitelisting. Until the current public IP (`182.76.27.87` or `0.0.0.0/0`) is added to the Atlas cluster whitelist, TCP connection to port 27017 times out, and the application safely operates via the in-memory repository fallback in `farmService.js`. Real disk-backed persistence and process restart survival will activate immediately upon IP whitelisting.
+### 3.3 MongoDB Atlas Connectivity & Network Resiliency
+- **Historical State**: Initial MongoDB Atlas onboarding was gated by IP whitelisting configurations.
+- **Current Verified State**: Live connection to the MongoDB Atlas cluster (`agrisense.e4pyxxk.mongodb.net/agrisense`) is fully operational and verified across all test suites. Real database CRUD operations, read-after-write consistency, and cross-process restart persistence are actively verified in `test_persistence_atlas.js` and downstream integration suites. The in-memory repository pattern in `farmService.js` is retained as an automatic resilience fallback in the event of temporary network or cluster unreachable conditions.

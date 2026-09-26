@@ -34,8 +34,9 @@ Although previous architecture planning selected **Open-Meteo** as the zero-cost
 | **Environment Variable** | `DATA_GOV_IN_API_KEY` |
 | **Provider Implementation** | `backend/models/market/providers/market_provider.py` (`AgmarknetApiProvider`) |
 | **Offline Local Fallback** | `LocalMarketDataProvider` reading `backend/models/market/data/sample_market_data.json` |
+| **Farm Integration Service**| `backend/services/farmMarketService.js` (`GET /api/farms/:farmId/market`) |
 | **Live Network Verification**| **`[NOT LIVE VERIFIED]`** |
-| **Unit Test Coverage** | 14/14 tests pass (`test_market_engine.py`) |
+| **Unit Test Coverage** | 14/14 tests pass (`test_market_engine.py`), 17/17 tests pass (`test_farm_market.js`) |
 
 ### Architecture & Provider Fallback Flow
 

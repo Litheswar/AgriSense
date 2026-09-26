@@ -1,7 +1,7 @@
 # AgriSense — Completed Milestones & Verification History
 
 **Status**: `[AUDITED]`  
-**Current Progress**: Milestones 1 through 18B Verified Complete.  
+**Current Progress**: Milestones 1 through 18J Verified Complete.  
 
 ---
 
@@ -19,6 +19,13 @@
 | **17** | **Node.js Express ↔ Python Subprocess IPC**| `[VERIFIED]` | `server.js`, `aiRoutes.js`, `aiService.js`, `dispatcher.py`, `test_integration.js` (13/13 pass) |
 | **18A** | **MongoDB Atlas Integration & Persistence** | `[VERIFIED]` | `Farm.js`, `farmService.js`, `db.js`, `test_persistence_atlas.js` (7/7 pass live on Atlas) |
 | **18B** | **Shared Farm State Service** | `[VERIFIED]` | `sharedFarmStateService.js`, `farmController.js`, `farmRoutes.js`, `test_shared_farm_state.js` (7/7 pass) |
+| **18D** | **Shared Farm State → Crop Recommendation Integration** | `[VERIFIED]` | `farmCropRecommendationService.js`, `farmController.js`, `farmRoutes.js`, `test_farm_crop_recommendation.js` (10/10 pass) |
+| **18E** | **Shared Farm State → Irrigation Recommendation Integration** | `[VERIFIED]` | `farmIrrigationService.js`, `farmController.js`, `farmRoutes.js`, `test_farm_irrigation.js` (13/13 pass) |
+| **18F** | **Shared Farm State → Fertilizer Recommendation Integration** | `[VERIFIED]` | `farmFertilizerService.js`, `farmController.js`, `farmRoutes.js`, `test_farm_fertilizer.js` (18/18 pass) |
+| **18G** | **Shared Farm State → Disease Risk Integration** | `[VERIFIED]` | `farmDiseaseRiskService.js`, `farmController.js`, `farmRoutes.js`, `test_farm_disease_risk.js` (17/17 pass) |
+| **18H** | **Shared Farm State → Market Intelligence Integration** | `[VERIFIED]` | `farmMarketService.js`, `farmController.js`, `farmRoutes.js`, `test_farm_market.js` (17/17 pass) |
+| **18I** | **Shared Farm State → Crop Ranking Integration** | `[VERIFIED]` | `farmCropRankingService.js`, `farmController.js`, `farmRoutes.js`, `test_farm_crop_ranking.js` (19/19 pass) |
+| **18J** | **Disease Detection → Farm Disease Context Integration** | `[VERIFIED]` | `aiController.js`, `Farm.js`, `farmService.js`, `test_disease_detection_farm_context.js` (13/13 pass) |
 
 ---
 
@@ -63,3 +70,31 @@
 ### Milestone 18B: Shared Farm State Service `[VERIFIED]`
 - **Scope**: Dedicated service layer (`sharedFarmStateService.js`) returning normalized Shared Farm State via `farmService`.
 - **Outcomes**: Encapsulated state transformation, handled `FARM_NOT_FOUND` and `INVALID_FARM_ID` errors, exposed `GET /api/farms/:farmId/shared-state` REST endpoint, and verified complete field mapping & data completeness (`test_shared_farm_state.js` passes 7/7 tests including live Atlas integration).
+
+### Milestone 18D: Shared Farm State → Crop Recommendation Integration `[VERIFIED]`
+- **Scope**: Integrated persisted Shared Farm State into the trained Crop Recommendation Random Forest inference model without model modification or retraining.
+- **Outcomes**: Built `farmCropRecommendationService.js`, implemented input validation refusing silent default values (`INSUFFICIENT_FARM_DATA`), exposed `GET /api/farms/:farmId/crop-recommendation` REST endpoint, and verified real Atlas persistence + AI model inference (`test_farm_crop_recommendation.js` passes 10/10 tests).
+
+### Milestone 18E: Shared Farm State → Irrigation Recommendation Integration `[VERIFIED]`
+- **Scope**: Integrated persisted Shared Farm State into the Irrigation Decision Engine without modifying existing decision rules or adding ML/LLMs.
+- **Outcomes**: Built `farmIrrigationService.js`, implemented feature extraction and missing value validation (`INSUFFICIENT_FARM_DATA`), exposed `GET /api/farms/:farmId/irrigation` REST endpoint, and verified real Atlas persistence + Irrigation Engine execution (`test_farm_irrigation.js` passes 13/13 tests).
+
+### Milestone 18F: Shared Farm State → Fertilizer Recommendation Integration `[VERIFIED]`
+- **Scope**: Integrated persisted Shared Farm State into the Fertilizer Decision Engine without modifying fertilizer rules.
+- **Outcomes**: Built `farmFertilizerService.js`, implemented input feature mapping (N, P, K, pH, crop, growth stage, diseaseContext), preserved disease caution injection safeguard, exposed `GET /api/farms/:farmId/fertilizer` REST endpoint, and verified real Atlas persistence + Fertilizer Engine execution (`test_farm_fertilizer.js` passes 18/18 tests).
+
+### Milestone 18G: Shared Farm State → Disease Risk Integration `[VERIFIED]`
+- **Scope**: Integrated persisted Shared Farm State into the Disease Risk Decision Engine without modifying risk rules or replacing engine with ML/CV models.
+- **Outcomes**: Built `farmDiseaseRiskService.js`, implemented feature mapping (crop, growthStage, temperature, humidity, rainfall, recentRainfall), enforced exact rainfall semantics, exposed `GET /api/farms/:farmId/disease-risk` REST endpoint, and verified real Atlas persistence + Disease Risk Engine execution (`test_farm_disease_risk.js` passes 17/17 tests).
+
+### Milestone 18H: Shared Farm State → Market Intelligence Integration `[VERIFIED]`
+- **Scope**: Integrated persisted Shared Farm State into the Market Intelligence Engine without modifying market engine logic, retraining models, or hardcoding prices.
+- **Outcomes**: Built `farmMarketService.js`, implemented crop extraction from Shared Farm State with `INSUFFICIENT_FARM_DATA` validation, preserved live AGMARKNET vs. local fallback provider selection, exposed `GET /api/farms/:farmId/market` REST endpoint, enforced read-only invariant (no Farm mutations), and verified real Atlas persistence + Market Engine execution (`test_farm_market.js` passes 17/17 tests).
+
+### Milestone 18I: Shared Farm State → Crop Ranking Integration `[VERIFIED]`
+- **Scope**: Integrated persisted Shared Farm State into the multi-criteria Crop Ranking Decision Engine combining agronomic prediction confidence from the trained Random Forest model with market signals from the Market Intelligence Engine.
+- **Outcomes**: Built `farmCropRankingService.js`, orchestrated Crop Recommendation and Crop Ranking execution via `aiService.js`, implemented strict input validation (`INSUFFICIENT_FARM_DATA`), location/market context fallback resolution, support for custom weights via query parameters (`agronomic_weight`, `market_weight`), exposed `GET /api/farms/:farmId/crop-ranking` REST endpoint, enforced read-only invariant, and verified real Atlas persistence + Crop Ranking execution (`test_farm_crop_ranking.js` passes 19/19 tests).
+
+### Milestone 18J: Disease Detection → Farm Disease Context Integration `[VERIFIED]`
+- **Scope**: Implemented runtime bridge connecting leaf image disease detection (MobileNetV2) to persisted `Farm.diseaseContext` in MongoDB Atlas and Shared Farm State without modifying model architecture or fertilizer rules.
+- **Outcomes**: Enhanced `POST /api/ai/disease-detection` and `POST /api/ai/predict` to accept optional `farmId`, validated farm existence, executed deep learning inference, mapped detection results to canonical `{ detected, disease, confidence }`, persisted updates exclusively to `Farm.diseaseContext` (protecting `Farm.crop.name` from overwrite), preserved zero-mutation backward compatibility for requests without `farmId`, connected downstream Fertilizer advisory to auto-inject caution warnings upon disease detection, preserved independent Disease Risk engine semantics, and verified real Atlas persistence (`test_disease_detection_farm_context.js` passes 13/13 tests).

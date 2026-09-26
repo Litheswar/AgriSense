@@ -64,12 +64,21 @@ Key configuration parameters:
 ### Running Full Regression Tests
 From the `backend/` directory:
 ```bash
-# Run both AI Integration Suite (13 tests) and Farm State Suite (10 tests)
+# Run all 10 integration and decision test suites (137 tests, 100% pass)
 npm test
 
 # Run individual suites
-npm run test:ai
-npm run test:farm
+npm run test:ai                # Milestone 17 (AI Subprocess IPC)
+npm run test:farm              # Milestone 18 (Farm CRUD & Schema Validation)
+npm run test:persistence       # Milestone 18A (MongoDB Atlas Persistence & Restart)
+npm run test:shared-state      # Milestone 18B (Shared Farm State Service)
+npm run test:farm-crop         # Milestone 18D (Shared Farm State -> Crop Recommendation)
+npm run test:farm-irrigation   # Milestone 18E (Shared Farm State -> Irrigation Advisory)
+npm run test:farm-fertilizer   # Milestone 18F (Shared Farm State -> Fertilizer Advisory)
+npm run test:farm-disease-risk # Milestone 18G (Shared Farm State -> Disease Risk Assessment)
+npm run test:farm-market       # Milestone 18H (Shared Farm State -> Market Intelligence)
+npm run test:farm-crop-ranking # Milestone 18I (Shared Farm State -> Crop Ranking Engine)
+npm run test:disease-context   # Milestone 18J (Disease Detection -> Farm Disease Context)
 ```
 
 ### Running Python Unit Tests

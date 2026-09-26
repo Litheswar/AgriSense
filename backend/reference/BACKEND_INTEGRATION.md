@@ -71,7 +71,14 @@ All AI requests are routed through `backend/routes/aiRoutes.js` to `backend/cont
 
 ### 1.4 Plant Disease Detection
 - **Endpoint**: `POST /api/ai/disease-detection`
-- **Request Body**: `{ "image_path": "path/to/leaf_image.jpg" }`
+- **Request Body**:
+  ```json
+  {
+    "image_path": "path/to/leaf_image.jpg",
+    "farmId": "64abc123def456789012abcd"
+  }
+  ```
+  > **Note (Milestone 18J)**: `farmId` is optional. When provided, the detection result is automatically persisted to `Farm.diseaseContext` on MongoDB Atlas as `{ detected, disease, confidence }`. This enables downstream `GET /api/farms/:farmId/fertilizer` to automatically inherit disease caution warnings. When omitted, behavior is unchanged (backward compatible).
 - **Response**:
   ```json
   {
@@ -82,9 +89,11 @@ All AI requests are routed through `backend/routes/aiRoutes.js` to `backend/cont
       "predicted_disease": "Healthy",
       "confidence": 0.9999,
       "top_3": [ ... ]
-    }
+    },
+    "farmContextUpdated": true
   }
   ```
+  > `farmContextUpdated` is `true` when `farmId` was provided and `Farm.diseaseContext` was successfully updated. Absent when no `farmId` was supplied.
 
 ### 1.5 Irrigation Advisory
 - **Endpoint**: `POST /api/ai/irrigation`
@@ -165,6 +174,13 @@ Provides persistence for farm profiles and transforms documents into the canonic
 | `POST` | `/api/farms` | Create a new Farm document and receive initialized Shared Farm State |
 | `GET` | `/api/farms` | List all registered farms |
 | `GET` | `/api/farms/:farmId` | Retrieve a farm and its transformed Shared Farm State |
+| `GET` | `/api/farms/:farmId/shared-state` | Retrieve normalized Shared Farm State object for a farm |
+| `GET` | `/api/farms/:farmId/crop-recommendation` | Retrieve AI Crop Recommendation for a farm based on its Shared Farm State |
+| `GET` | `/api/farms/:farmId/irrigation` | Retrieve AI Irrigation Recommendation for a farm based on its Shared Farm State |
+| `GET` | `/api/farms/:farmId/fertilizer` | Retrieve AI Fertilizer Recommendation for a farm based on its Shared Farm State |
+| `GET` | `/api/farms/:farmId/disease-risk` | Retrieve AI Environmental Disease Risk Assessment for a farm based on its Shared Farm State |
+| `GET` | `/api/farms/:farmId/market` | Retrieve Market Intelligence analysis for a farm based on its Shared Farm State |
+| `GET` | `/api/farms/:farmId/crop-ranking` | Retrieve multi-criteria Crop Ranking for a farm based on its Shared Farm State |
 | `PATCH` | `/api/farms/:farmId` | Incrementally update specific fields (e.g. soilMoisture, crop, weather) |
 | `PUT` | `/api/farms/:farmId` | Replace/update farm document |
 | `DELETE` | `/api/farms/:farmId` | Delete farm document |

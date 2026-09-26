@@ -5,11 +5,21 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node test_integration.js && node tests/test_farm.js && node tests/test_shared_farm_state.js",
+    "test": "node test_integration.js && node tests/test_farm.js && node tests/test_shared_farm_state.js && node tests/test_farm_crop_recommendation.js && node tests/test_farm_irrigation.js && node tests/test_farm_fertilizer.js && node tests/test_farm_disease_risk.js && node tests/test_farm_market.js && node tests/test_farm_crop_ranking.js && node tests/test_disease_detection_farm_context.js && node tests/test_farm_evaluation.js && node tests/test_weather_service.js && node tests/test_farm_weather.js",
     "test:ai": "node test_integration.js",
     "test:farm": "node tests/test_farm.js",
     "test:persistence": "node tests/test_persistence_atlas.js",
-    "test:shared-state": "node tests/test_shared_farm_state.js"
+    "test:shared-state": "node tests/test_shared_farm_state.js",
+    "test:farm-crop": "node tests/test_farm_crop_recommendation.js",
+    "test:farm-irrigation": "node tests/test_farm_irrigation.js",
+    "test:farm-fertilizer": "node tests/test_farm_fertilizer.js",
+    "test:farm-disease-risk": "node tests/test_farm_disease_risk.js",
+    "test:farm-market": "node tests/test_farm_market.js",
+    "test:farm-crop-ranking": "node tests/test_farm_crop_ranking.js",
+    "test:disease-context": "node tests/test_disease_detection_farm_context.js",
+    "test:farm-evaluation": "node tests/test_farm_evaluation.js",
+    "test:weather": "node tests/test_weather_service.js && node tests/test_farm_weather.js",
+    "test:weather-live": "node tests/test_weather_live_atlas.js"
   },
   "keywords": [
     "agrisense",

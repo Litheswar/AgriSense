@@ -7,29 +7,23 @@
 
 ## 1. High-Priority Engineering Tasks
 
-### Task 1: Live MongoDB Production Connectivity
+### Task 1: Live MongoDB Production Connectivity `[COMPLETED]`
 - **Objective**: Establish and verify a live connection to a running MongoDB database instance.
-- **Current State**: Code, schema, CRUD endpoints, and in-memory fallback are complete and pass 10/10 tests. However, local mongod is offline (`ECONNREFUSED`).
-- **Required Steps**:
-  1. Provision a local MongoDB service or MongoDB Atlas cloud cluster.
-  2. Configure `MONGODB_URI` in `.env`.
-  3. Run `test_farm.js` to verify live read-after-write persistence, indexing, and connection pooling.
+- **Current State**: Live connection to MongoDB Atlas (`agrisense`) verified complete. `test_persistence_atlas.js` passes 7/7 tests on live Atlas cluster.
 
-### Task 2: Automated Shared Farm State → AI Execution Pipeline
-- **Objective**: Create dedicated routes that fetch a `Farm` document and automatically evaluate it across all AI engines.
-- **Current State**: Client must manually map Farm fields into separate `/api/ai/*` requests.
-- **Required Steps**:
-  1. Add `GET /api/farms/:farmId/recommend-crop`: Automatically extracts `soil` and `weather` from the farm document and calls `predictCrop()`.
-  2. Add `GET /api/farms/:farmId/irrigation-advisory`: Automatically pulls `soilMoisture` and `weather` and calls `recommendIrrigation()`.
-  3. Add `POST /api/farms/:farmId/full-audit`: Single composite endpoint executing all relevant engines for that farm.
+### Task 2: Automated Shared Farm State → AI Execution Pipelines `[COMPLETED]`
+- **Objective**: Create dedicated service boundaries and endpoints connecting Shared Farm State to AI modules.
+- **Current State**: 
+  - **Crop Recommendation Pipeline**: `[COMPLETED AND VERIFIED]` via `farmCropRecommendationService.js` and `GET /api/farms/:farmId/crop-recommendation`.
+  - **Irrigation Advisory Pipeline**: `[COMPLETED AND VERIFIED]` via `farmIrrigationService.js` and `GET /api/farms/:farmId/irrigation`.
+  - **Fertilizer Advisory Pipeline**: `[COMPLETED AND VERIFIED]` via `farmFertilizerService.js` and `GET /api/farms/:farmId/fertilizer`.
+  - **Disease Risk Advisory Pipeline**: `[COMPLETED AND VERIFIED]` via `farmDiseaseRiskService.js` and `GET /api/farms/:farmId/disease-risk`.
+  - **Market Intelligence Pipeline**: `[COMPLETED AND VERIFIED]` via `farmMarketService.js` and `GET /api/farms/:farmId/market`.
+  - **Crop Ranking Pipeline**: `[COMPLETED AND VERIFIED]` via `farmCropRankingService.js` and `GET /api/farms/:farmId/crop-ranking`.
 
-### Task 3: Automatic Disease Detection → Fertilizer Context Pipeline
+### Task 3: Automatic Disease Detection → Fertilizer Context Pipeline `[COMPLETED]`
 - **Objective**: Automatically update `Farm.diseaseContext` following a disease detection event.
-- **Current State**: The Fertilizer Engine accepts a `disease_status` dictionary, but no automated runtime pipeline updates the Farm state from `aiService.detectDisease()`.
-- **Required Steps**:
-  1. Extend `POST /api/ai/disease-detection` to optionally accept `farmId`.
-  2. Upon classification, update `Farm.diseaseContext` with detected disease name and confidence.
-  3. Ensure subsequent fertilizer advisory calls automatically inherit this disease context.
+- **Current State**: `[COMPLETED AND VERIFIED]` via Milestone 18J. `POST /api/ai/disease-detection` and `POST /api/ai/predict` accept optional `farmId`, run MobileNetV2 inference, persist `{ detected, disease, confidence }` directly into `Farm.diseaseContext` on MongoDB Atlas, and downstream `GET /api/farms/:farmId/fertilizer` automatically inherits this disease context and injects the caution safeguard. `test_disease_detection_farm_context.js` passes 13/13 tests.
 
 ---
 

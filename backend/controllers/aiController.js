@@ -5,24 +5,43 @@
  */
 
 const aiService = require('../services/aiService');
+const farmService = require('../services/farmService');
 
 /**
  * Standard error response formatter.
  */
 function sendError(res, err, defaultStatus = 400) {
+  const code = err.code || (err.error && err.error.code) || 'AI_SERVICE_ERROR';
+  let status = defaultStatus;
+
+  if (code === 'FARM_NOT_FOUND') {
+    status = 404;
+  } else if (
+    code === 'INVALID_FARM_ID' ||
+    code === 'VALIDATION_ERROR' ||
+    code === 'INVALID_INPUT' ||
+    code === 'MISSING_IMAGE_PATH' ||
+    code === 'MISSING_TASK' ||
+    code === 'PROHIBITED_OPERATOR' ||
+    code === 'DiseaseInferenceError'
+  ) {
+    status = 400;
+  } else if (code === 'INTERNAL_ERROR' || code === 'TIMEOUT') {
+    status = 500;
+  }
+
   if (err && err.error && err.error.code) {
-    const status = err.error.code === 'INTERNAL_ERROR' || err.error.code === 'TIMEOUT' ? 500 : defaultStatus;
     return res.status(status).json(err);
   }
 
-  const statusCode = err.status || defaultStatus;
   const message = err.message || (typeof err === 'string' ? err : 'An unexpected error occurred in AI service.');
 
-  return res.status(statusCode).json({
+  return res.status(status).json({
     success: false,
     error: {
-      code: err.code || 'AI_SERVICE_ERROR',
-      message: message
+      code,
+      message,
+      ...(err.details ? { details: err.details } : {})
     }
   });
 }
@@ -57,6 +76,12 @@ exports.handlePredict = async (req, res) => {
     }
 
     const taskPayload = input || payload || {};
+    if (task.trim().toLowerCase() === 'disease_detection' && (taskPayload.farmId || req.body.farmId)) {
+      req.body.image_path = taskPayload.image_path || req.body.image_path;
+      req.body.farmId = taskPayload.farmId || req.body.farmId;
+      return exports.handleDiseaseDetection(req, res);
+    }
+
     const result = await aiService.executeTask(task, taskPayload);
     return res.status(200).json(result);
   } catch (err) {
@@ -79,6 +104,7 @@ exports.handleCropRecommendation = async (req, res) => {
 
 /**
  * POST /api/ai/disease-detection
+ * Supports optional farmId to update Farm.diseaseContext with prediction results (Milestone 18J).
  */
 exports.handleDiseaseDetection = async (req, res) => {
   try {
@@ -92,8 +118,57 @@ exports.handleDiseaseDetection = async (req, res) => {
         }
       });
     }
-    const result = await aiService.detectDisease(imagePath);
-    return res.status(200).json(result);
+
+    const farmId = req.body.farmId || (req.body.input && req.body.input.farmId);
+
+    // If farmId is provided, validate ID format and ensure Farm exists before proceeding
+    if (farmId) {
+      if (!farmService.isValidId(farmId)) {
+        const err = new Error(`Invalid farm ID format: '${farmId}'`);
+        err.code = 'INVALID_FARM_ID';
+        throw err;
+      }
+      // Check farm existence (throws FARM_NOT_FOUND if not found)
+      await farmService.getFarmById(farmId);
+    }
+
+    // 1. Execute Disease Detection inference
+    const aiResult = await aiService.detectDisease(imagePath);
+    const detectionData = (aiResult && aiResult.result) ? aiResult.result : aiResult;
+
+    // 2. If no farmId provided, return standard detection result directly (backward-compatible mode)
+    if (!farmId) {
+      return res.status(200).json(aiResult);
+    }
+
+    // 3. Map detection result to canonical diseaseContext
+    const isHealthy = !detectionData.predicted_disease || String(detectionData.predicted_disease).trim().toLowerCase() === 'healthy';
+    const detected = !isHealthy;
+    const disease = detected ? String(detectionData.predicted_disease).trim() : 'Healthy';
+    const confidence = typeof detectionData.confidence === 'number' ? detectionData.confidence : (detectionData.confidence ? parseFloat(detectionData.confidence) : null);
+
+    // 4. Update Farm.diseaseContext via farmService (preserves all other fields, including crop.name)
+    const updatedFarm = await farmService.updateFarm(farmId, {
+      diseaseContext: {
+        detected,
+        disease,
+        confidence
+      }
+    });
+
+    // 5. Return disease detection result with updated farm metadata
+    return res.status(200).json({
+      success: true,
+      task: 'disease_detection',
+      result: detectionData,
+      farmId: farmId.toString(),
+      diseaseContext: {
+        detected,
+        disease,
+        confidence
+      },
+      farm: updatedFarm.toObject ? updatedFarm.toObject() : updatedFarm
+    });
   } catch (err) {
     return sendError(res, err, 400);
   }

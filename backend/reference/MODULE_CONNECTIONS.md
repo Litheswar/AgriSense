@@ -112,9 +112,9 @@ Architecturally intended relationships where runtime bridging has not yet been i
    - **Reality**: No weather service client exists. Disease risk engine requires temperature, humidity, rainfall to be passed in the API request body.
 
 3. **Disease Detection (CNN) → Fertilizer Engine**:
-   - **Type**: `PLANNED`
-   - **Status**: `[PARTIAL / PLANNED BRIDGE]`
-   - **Reality**: The Fertilizer Engine accepts a `disease_status` dictionary and applies caution logic. However, there is NO automated pipeline that classifies an image, updates `Farm.diseaseContext`, and invokes `fertilizer_engine`. The connection exists only via manual payload parameterization.
+   - **Type**: `DIRECT`
+   - **Status**: `[IMPLEMENTED AND VERIFIED]`
+   - **Reality**: Milestone 18J implemented the automated runtime bridge. `POST /api/ai/disease-detection` with optional `farmId` runs MobileNetV2 inference, persists `{ detected, disease, confidence }` directly into `Farm.diseaseContext` on MongoDB Atlas. Downstream `GET /api/farms/:farmId/fertilizer` automatically inherits this disease context and injects the caution safeguard. Verified via `test_disease_detection_farm_context.js` (13/13 tests pass).
 
 4. **Automated Farm State Execution Pipeline (`/api/farms/:id/evaluate`)**:
    - **Type**: `PLANNED`
@@ -132,12 +132,13 @@ Architecturally intended relationships where runtime bridging has not yet been i
 | `aiController.js` | `aiService.js` | `DIRECT` | `[IMPLEMENTED]` | Task string, input JSON payload | `aiController.js:47-165`, `test_integration.js:Tests 1-13` |
 | `aiService.js` | `dispatcher.py` | `DIRECT` | `[IMPLEMENTED]` | Stdin JSON string, stdout JSON response | `aiService.js:24-105`, `dispatcher.py:291-330` |
 | `Farm.js` Document | `SharedFarmState` | `DIRECT` | `[IMPLEMENTED]` | Normalized farm dictionary | `Farm.js:213-238`, `test_farm.js:Test 1, Test 10` |
-| `SharedFarmState` | `CropRecommender` | `SHARED CONTEXT` | `[PARTIAL]` | `soil.N, P, K, ph`, `weather.temp, hum, rain` | Schema compatible; automatic endpoint planned |
-| `SharedFarmState` | `IrrigationEngine` | `SHARED CONTEXT` | `[PARTIAL]` | `soilMoisture`, `weather.*`, `crop.*` | Schema compatible; automatic endpoint planned |
-| `SharedFarmState` | `FertilizerEngine` | `SHARED CONTEXT` | `[PARTIAL]` | `soil.N, P, K, ph`, `crop.*`, `diseaseContext` | Schema compatible; automatic endpoint planned |
-| `SharedFarmState` | `DiseaseRiskEngine`| `SHARED CONTEXT` | `[PARTIAL]` | `weather.*`, `crop.*` | Schema compatible; automatic endpoint planned |
-| `SharedFarmState` | `MarketEngine` | `SHARED CONTEXT` | `[PARTIAL]` | `crop.name`, `marketContext.market, state` | Schema compatible; automatic endpoint planned |
-| `DiseaseDetector` | `FertilizerEngine` | `PLANNED` | `[PARTIAL]` | `diseaseContext` → `disease_status` | Interface supported; runtime bridge planned |
+| `SharedFarmState` | `CropRecommender` | `DIRECT` | `[IMPLEMENTED]` | `soil.N, P, K, ph`, `weather.temp, hum, rain` | `farmCropRecommendationService.js`, `test_farm_crop_recommendation.js` |
+| `SharedFarmState` | `IrrigationEngine` | `DIRECT` | `[IMPLEMENTED]` | `crop, growth_stage, soil_moisture, weather.*` | `farmIrrigationService.js`, `test_farm_irrigation.js` |
+| `SharedFarmState` | `FertilizerEngine` | `DIRECT` | `[IMPLEMENTED]` | `soil.N, P, K, ph, crop.*, diseaseContext` | `farmFertilizerService.js`, `test_farm_fertilizer.js` |
+| `SharedFarmState` | `DiseaseRiskEngine`| `DIRECT` | `[IMPLEMENTED]` | `weather.*`, `crop.*` | `farmDiseaseRiskService.js`, `test_farm_disease_risk.js` |
+| `SharedFarmState` | `MarketEngine` | `DIRECT` | `[IMPLEMENTED]` | `crop.name`, `marketContext.market, state` | `farmMarketService.js`, `test_farm_market.js` |
+| `SharedFarmState` | `CropRankingEngine`| `DIRECT` | `[IMPLEMENTED]` | `soil.*`, `weather.*`, `marketContext.*` | `farmCropRankingService.js`, `test_farm_crop_ranking.js` |
+| `DiseaseDetector` | `FertilizerEngine` | `DIRECT` | `[IMPLEMENTED]` | `diseaseContext` → `disease_status` | `aiController.js`, `farmService.js`, `test_disease_detection_farm_context.js` (13/13 pass) |
 | `WeatherService` | `IrrigationEngine` | `PLANNED` | `[NOT IMPLEMENTED]`| `rain_probability`, `expected_rainfall` | No weather service implemented in repository |
 | `WeatherService` | `DiseaseRiskEngine`| `PLANNED` | `[NOT IMPLEMENTED]`| `temperature`, `humidity`, `rainfall` | No weather service implemented in repository |
 
@@ -196,6 +197,7 @@ This scenario demonstrates the lifecycle of a farmer's decision workflow, clearl
 - Farmer uploads an image of a symptomatic leaf via `POST /api/ai/disease-detection`.
 - MobileNetV2 classifies `Tomato___Late_blight` with 96.55% confidence.
 
-### Step 7: Automatic Disease Caution in Fertilizer Advisory `[PLANNED RUNTIME BRIDGE]`
-- *Currently Implemented*: If `disease_status: { detected: true, disease: "Late blight" }` is included in `POST /api/ai/fertilizer`, the engine outputs a prominent caution warning against using fertilizer as pesticide.
-- *Planned*: Automatic update of `Farm.diseaseContext` immediately upon Step 6 inference completion.
+### Step 7: Automatic Disease Caution in Fertilizer Advisory `[IMPLEMENTED AND VERIFIED]`
+- `POST /api/ai/disease-detection` with `farmId` automatically persists `{ detected: true, disease: "Late blight", confidence: 0.9655 }` into `Farm.diseaseContext` on MongoDB Atlas.
+- Downstream `GET /api/farms/:farmId/fertilizer` automatically inherits the disease context and injects a prominent caution warning: "Caution: A disease (Late blight) was detected. Do not use fertilizer as a treatment for disease."
+- Verified via Milestone 18J: `test_disease_detection_farm_context.js` passes 13/13 tests.
