@@ -6,6 +6,13 @@
 
 const aiService = require('../services/aiService');
 const farmService = require('../services/farmService');
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+
+const diseaseTempDirectory = path.resolve(__dirname, '..', 'tmp', 'disease');
+const legacyImageRoot = path.resolve(process.env.DISEASE_IMAGE_ROOT || path.resolve(__dirname, '..', 'models', 'disease_detection', 'dataset', 'raw'));
+const loadFileTypeDetector = import('file-type').then(module => module.fileTypeFromBuffer);
 
 /**
  * Standard error response formatter.
@@ -119,76 +126,135 @@ exports.handleCropRecommendation = async (req, res) => {
  */
 exports.handleDiseaseDetection = async (req, res) => {
   try {
-    const imagePath = req.body.image_path || (req.body.input && req.body.input.image_path);
-    if (typeof imagePath !== 'string' || imagePath.trim().length === 0 || imagePath.length > 1024) {
-      const missing = typeof imagePath !== 'string' || imagePath.trim().length === 0;
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: missing ? 'MISSING_IMAGE_PATH' : 'INVALID_INPUT',
-          message: missing
-            ? "Request body must include 'image_path' string."
-            : "'image_path' must be at most 1024 characters."
-        }
-      });
-    }
-
+    const requestedImagePath = req.body.image_path || (req.body.input && req.body.input.image_path);
+    const imagePath = await resolveLegacyImagePath(requestedImagePath);
     const farmId = req.body.farmId || (req.body.input && req.body.input.farmId);
-
-    // If farmId is provided, validate ID format and ensure Farm exists before proceeding
-    if (farmId) {
-      if (!farmService.isValidId(farmId)) {
-        const err = new Error(`Invalid farm ID format: '${farmId}'`);
-        err.code = 'INVALID_FARM_ID';
-        throw err;
-      }
-      // The route middleware has already authenticated the caller and loaded this owned Farm.
-      if (!req.farm || req.farm._id.toString() !== farmId.toString()) {
-        const err = new Error('Farm not found.');
-        err.code = 'FARM_NOT_FOUND';
-        throw err;
-      }
-    }
-
-    // 1. Execute Disease Detection inference
-    const aiResult = await aiService.detectDisease(imagePath);
-    const detectionData = (aiResult && aiResult.result) ? aiResult.result : aiResult;
-
-    // 2. If no farmId provided, return standard detection result directly (backward-compatible mode)
-    if (!farmId) {
-      return res.status(200).json(aiResult);
-    }
-
-    // 3. Map detection result to canonical diseaseContext
-    const isHealthy = !detectionData.predicted_disease || String(detectionData.predicted_disease).trim().toLowerCase() === 'healthy';
-    const detected = !isHealthy;
-    const disease = detected ? String(detectionData.predicted_disease).trim() : 'Healthy';
-    const confidence = typeof detectionData.confidence === 'number' ? detectionData.confidence : (detectionData.confidence ? parseFloat(detectionData.confidence) : null);
-
-    // 4. Update Farm.diseaseContext via farmService (preserves all other fields, including crop.name)
-    const updatedFarm = await farmService.updateFarm(farmId, {
-      diseaseContext: {
-        detected,
-        disease,
-        confidence
-      }
-    }, req.farm);
-
-    // 5. Return disease detection result with updated farm metadata
-    return res.status(200).json({
-      success: true,
-      task: 'disease_detection',
-      result: detectionData,
-      farmId: farmId.toString(),
-      diseaseContext: {
-        detected,
-        disease,
-        confidence
-      },
-      farm: updatedFarm.toObject ? updatedFarm.toObject() : updatedFarm
-    });
+    return res.status(200).json(await runDiseaseDetection(imagePath, farmId, req.farm));
   } catch (err) {
     return sendError(res, err, 400);
+  }
+};
+
+async function resolveLegacyImagePath(imagePath) {
+  if (typeof imagePath !== 'string' || imagePath.trim().length === 0) {
+    const err = new Error("Request body must include 'image_path' string.");
+    err.code = 'MISSING_IMAGE_PATH';
+    throw err;
+  }
+  if (imagePath.length > 1024) {
+    const err = new Error('Image path is too long.');
+    err.code = 'INVALID_INPUT';
+    throw err;
+  }
+  try {
+    const root = await fs.promises.realpath(legacyImageRoot);
+    const resolved = await fs.promises.realpath(path.resolve(imagePath));
+    const relative = path.relative(root, resolved);
+    if (!relative || relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) throw new Error('outside image root');
+    const stat = await fs.promises.stat(resolved);
+    if (!stat.isFile()) throw new Error('not a regular image file');
+    return resolved;
+  } catch (_error) {
+    const err = new Error('Image path must reference a file inside the configured disease image root.');
+    err.code = 'INVALID_IMAGE_PATH';
+    throw err;
+  }
+}
+
+async function runDiseaseDetection(imagePath, farmId, authorizedFarm) {
+  if (farmId) {
+    if (!farmService.isValidId(farmId)) {
+      const err = new Error('Invalid farm ID.');
+      err.code = 'INVALID_FARM_ID';
+      throw err;
+    }
+    if (!authorizedFarm || authorizedFarm._id.toString() !== farmId.toString()) {
+      const err = new Error('Farm not found.');
+      err.code = 'FARM_NOT_FOUND';
+      throw err;
+    }
+  }
+
+  const aiResult = await aiService.detectDisease(imagePath);
+  if (!farmId) return aiResult;
+
+  const detectionData = aiResult && aiResult.result ? aiResult.result : aiResult;
+  const isHealthy = !detectionData.predicted_disease || String(detectionData.predicted_disease).trim().toLowerCase() === 'healthy';
+  const diseaseContext = {
+    detected: !isHealthy,
+    disease: isHealthy ? 'Healthy' : String(detectionData.predicted_disease).trim(),
+    confidence: typeof detectionData.confidence === 'number'
+      ? detectionData.confidence
+      : (detectionData.confidence ? parseFloat(detectionData.confidence) : null)
+  };
+  const updatedFarm = await farmService.updateFarm(farmId, { diseaseContext }, authorizedFarm);
+  return {
+    success: true,
+    task: 'disease_detection',
+    result: detectionData,
+    farmId: farmId.toString(),
+    diseaseContext,
+    farm: updatedFarm.toObject ? updatedFarm.toObject() : updatedFarm
+  };
+}
+
+/** Browser upload route; file bytes stay in bounded memory until authorization and signature checks pass. */
+exports.handleDiseaseDetectionUpload = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, error: { code: 'MISSING_IMAGE', message: "Provide one image in the 'image' field." } });
+  }
+
+  const file = req.file;
+  if (!file.buffer || file.size === 0) {
+    return res.status(400).json({ success: false, error: { code: 'EMPTY_FILE', message: 'Uploaded image is empty.' } });
+  }
+  if (typeof file.originalname !== 'string' || file.originalname.length > 255
+    || /[\\/\u0000-\u001f]/.test(file.originalname) || file.originalname.includes('..')) {
+    return res.status(400).json({ success: false, error: { code: 'INVALID_FILENAME', message: 'Image filename is invalid.' } });
+  }
+
+  const extension = path.extname(file.originalname).toLowerCase();
+  const allowed = {
+    '.jpg': { mime: 'image/jpeg', ext: 'jpg' },
+    '.jpeg': { mime: 'image/jpeg', ext: 'jpg' },
+    '.png': { mime: 'image/png', ext: 'png' }
+  };
+  const expected = allowed[extension];
+  if (!expected || file.mimetype !== expected.mime) {
+    return res.status(415).json({ success: false, error: { code: 'UNSUPPORTED_MEDIA_TYPE', message: 'Upload a JPEG or PNG image with a matching filename extension and MIME type.' } });
+  }
+
+  let detectedType;
+  try {
+    const fileTypeFromBuffer = await loadFileTypeDetector;
+    detectedType = await fileTypeFromBuffer(file.buffer);
+  } catch (_error) {
+    return res.status(500).json({ success: false, error: { code: 'INTERNAL_SERVER_ERROR', message: 'Image validation is unavailable.' } });
+  }
+  if (!detectedType || detectedType.mime !== expected.mime) {
+    return res.status(415).json({ success: false, error: { code: 'UNSUPPORTED_FILE_CONTENT', message: 'File contents are not a supported JPEG or PNG image.' } });
+  }
+
+  let tempPath;
+  try {
+    await fs.promises.mkdir(diseaseTempDirectory, { recursive: true, mode: 0o700 });
+    tempPath = path.join(diseaseTempDirectory, `${crypto.randomUUID()}.${expected.ext}`);
+    await fs.promises.writeFile(tempPath, file.buffer, { flag: 'wx', mode: 0o600 });
+
+    const farmId = req.body && req.body.farmId;
+    const result = await runDiseaseDetection(tempPath, farmId, req.farm);
+    await fs.promises.unlink(tempPath);
+    tempPath = null;
+    return res.status(200).json(result);
+  } catch (error) {
+    return sendError(res, error, 500);
+  } finally {
+    if (tempPath) {
+      try { await fs.promises.unlink(tempPath); }
+      catch (error) {
+        if (error.code !== 'ENOENT') console.error('[Disease Upload Cleanup Error]', error.code || 'unknown error');
+      }
+    }
   }
 };
 

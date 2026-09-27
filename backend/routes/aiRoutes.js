@@ -8,6 +8,7 @@ const express = require('express');
 const router = express.Router();
 const aiController = require('../controllers/aiController');
 const { authenticateOptionalFarm, authenticatePredictDiseaseFarm } = require('../middleware/authentication');
+const { parseDiseaseImage, authorizeOptionalFarm } = require('../middleware/diseaseImageUpload');
 
 // Health Check
 router.get('/health', aiController.getHealth);
@@ -18,6 +19,7 @@ router.post('/predict', authenticatePredictDiseaseFarm, aiController.handlePredi
 // Specific Task Endpoints
 router.post('/crop-recommendation', aiController.handleCropRecommendation);
 router.post('/disease-detection', authenticateOptionalFarm, aiController.handleDiseaseDetection);
+router.post('/disease-detection/upload', parseDiseaseImage, authorizeOptionalFarm, aiController.handleDiseaseDetectionUpload);
 router.post('/irrigation', aiController.handleIrrigation);
 router.post('/fertilizer', aiController.handleFertilizer);
 router.post('/disease-risk', aiController.handleDiseaseRisk);

@@ -1,4 +1,5 @@
 const nodeAssert = require('node:assert/strict');
+const path = require('path');
 let checks = 0;
 const assert = (...args) => { checks++; return nodeAssert(...args); };
 for (const method of ['equal', 'deepEqual', 'match']) {
@@ -20,6 +21,7 @@ const farmWeatherService = require('../services/farmWeatherService');
 
 process.env.JWT_SECRET ||= 'test-only-secret-generated-for-agrisense-m21';
 const app = require('../server');
+const diseaseFixturePath = path.resolve(__dirname, '../models/disease_detection/dataset/raw/Potato___healthy/00fc2ee5-729f-4757-8aeb-65c3355874f2___RS_HL 1864.JPG');
 
 async function request(base, method, path, body, token) {
   const response = await fetch(`${base}${path}`, {
@@ -139,12 +141,13 @@ async function main() {
       'disease image path must be a bounded string');
     assert.equal((await request(base, 'POST', '/api/ai/disease-detection', { image_path: `x${'x'.repeat(1024)}` })).status, 400,
       'oversized disease image paths must be rejected');
-    assert.equal((await request(base, 'POST', '/api/ai/disease-detection', { image_path: 'test-image.jpg' })).status, 200, 'standalone disease detection remains public');
-    const diseaseOther = await request(base, 'POST', '/api/ai/disease-detection', { image_path: 'test-image.jpg', farmId: farmAId }, registerB.body.token);
+    assert.equal((await request(base, 'POST', '/api/ai/disease-detection', { image_path: diseaseFixturePath })).status, 200, 'standalone disease detection remains public for trusted fixture paths');
+    assert.equal((await request(base, 'POST', '/api/ai/disease-detection', { image_path: '../../server.js' })).status, 400, 'legacy image paths must stay under the configured trusted root');
+    const diseaseOther = await request(base, 'POST', '/api/ai/disease-detection', { image_path: diseaseFixturePath, farmId: farmAId }, registerB.body.token);
     assert.equal(diseaseOther.status, 404);
-    assert.equal((await request(base, 'POST', '/api/ai/disease-detection', { image_path: 'test-image.jpg', farmId: farmAId })).status, 401);
-    assert.equal((await request(base, 'POST', '/api/ai/predict', { task: 'disease_detection', input: { image_path: 'test-image.jpg', farmId: farmAId } }, registerB.body.token)).status, 404);
-    const diseaseOwn = await request(base, 'POST', '/api/ai/disease-detection', { image_path: 'test-image.jpg', farmId: farmAId }, registerA.body.token);
+    assert.equal((await request(base, 'POST', '/api/ai/disease-detection', { image_path: diseaseFixturePath, farmId: farmAId })).status, 401);
+    assert.equal((await request(base, 'POST', '/api/ai/predict', { task: 'disease_detection', input: { image_path: diseaseFixturePath, farmId: farmAId } }, registerB.body.token)).status, 404);
+    const diseaseOwn = await request(base, 'POST', '/api/ai/disease-detection', { image_path: diseaseFixturePath, farmId: farmAId }, registerA.body.token);
     assert.equal(diseaseOwn.status, 200);
     assert.equal((await Farm.findById(farmAId)).diseaseContext.disease, 'Healthy');
     aiService.predictCrop = async () => ({ result: { predicted_crop: 'test' } });

@@ -38,6 +38,9 @@ build/
 .env.local
 .env.*.local
 
+# Temporary disease inference uploads
+backend/tmp/disease/
+
 # Raw Image Datasets (obtain separately — see backend/reference/DATASETS.md)
 backend/models/disease_detection/dataset/raw/
 

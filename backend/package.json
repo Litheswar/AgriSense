@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node tests/test_auth_multitenancy.js && node test_integration.js && node tests/test_farm.js && node tests/test_shared_farm_state.js && node tests/test_farm_crop_recommendation.js && node tests/test_farm_irrigation.js && node tests/test_farm_fertilizer.js && node tests/test_farm_disease_risk.js && node tests/test_farm_market.js && node tests/test_farm_crop_ranking.js && node tests/test_disease_detection_farm_context.js && node tests/test_farm_evaluation.js && node tests/test_weather_service.js && node tests/test_farm_weather.js && node tests/test_frontend_workflow_atlas.js",
+    "test": "node tests/test_auth_multitenancy.js && node test_integration.js && node tests/test_farm.js && node tests/test_shared_farm_state.js && node tests/test_farm_crop_recommendation.js && node tests/test_farm_irrigation.js && node tests/test_farm_fertilizer.js && node tests/test_farm_disease_risk.js && node tests/test_farm_market.js && node tests/test_farm_crop_ranking.js && node tests/test_disease_detection_farm_context.js && node tests/test_farm_evaluation.js && node tests/test_weather_service.js && node tests/test_farm_weather.js && node tests/test_frontend_workflow_atlas.js && node tests/test_disease_detection_upload.js",
     "test:auth": "node tests/test_auth_multitenancy.js",
     "test:ai": "node test_integration.js",
     "test:farm": "node tests/test_farm.js",
@@ -18,6 +18,7 @@
     "test:farm-market": "node tests/test_farm_market.js",
     "test:farm-crop-ranking": "node tests/test_farm_crop_ranking.js",
     "test:disease-context": "node tests/test_disease_detection_farm_context.js",
+    "test:disease-upload": "node tests/test_disease_detection_upload.js",
     "test:farm-evaluation": "node tests/test_farm_evaluation.js",
     "test:weather": "node tests/test_weather_service.js && node tests/test_farm_weather.js",
     "test:weather-live": "node tests/test_weather_live_atlas.js"
@@ -34,7 +35,9 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
+    "file-type": "^21.3.4",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.10.0"
+    "mongoose": "^9.10.0",
+    "multer": "^2.4.0"
   }
 }
