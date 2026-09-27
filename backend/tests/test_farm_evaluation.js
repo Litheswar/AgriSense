@@ -107,10 +107,11 @@ async function run() {
     });
 
     await test('failed crop inference marks ranking dependency unavailable', async () => {
-      crop.getCropRecommendation = async () => { throw { error: { code: 'PYTHON_SPAWN_ERROR', message: 'unavailable' } }; };
+      crop.getCropRecommendation = async () => { throw { error: { code: 'PYTHON_SPAWN_ERROR', message: 'C:\\private\\traceback.py: secret' } }; };
       const result = await evaluation.evaluateFarm(farmId);
       assert(result.status === 'PARTIAL', 'expected partial result');
       assert(result.recommendations.cropRecommendation.status === 'INTERNAL_ERROR', 'Python failure classification wrong');
+      assert(result.recommendations.cropRecommendation.error.message === 'Component evaluation failed.', 'internal error details leaked');
       assert(result.recommendations.cropRanking.status === 'INSUFFICIENT_DEPENDENCY', 'ranking dependency not reported');
       crop.getCropRecommendation = async (id, state) => ({ success: true, farmId: id, sharedFarmState: state, recommendation });
     });

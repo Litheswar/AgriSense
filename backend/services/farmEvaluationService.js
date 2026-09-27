@@ -25,12 +25,18 @@ function componentFailure(error) {
   const status = code === 'INSUFFICIENT_FARM_DATA'
     ? code
     : (code === 'PROVIDER_UNAVAILABLE' || code === 'MARKET_PROVIDER_UNAVAILABLE' ? 'PROVIDER_UNAVAILABLE' : 'INTERNAL_ERROR');
+  const messages = {
+    INSUFFICIENT_FARM_DATA: 'Farm data is insufficient for this recommendation.',
+    PROVIDER_UNAVAILABLE: 'An external provider is temporarily unavailable.',
+    MARKET_PROVIDER_UNAVAILABLE: 'Market data is temporarily unavailable.'
+  };
   return {
     status,
     error: {
       code,
-      message: (error && error.message) || (error && error.error && error.error.message) || 'Component evaluation failed.',
-      ...(error && error.missingFields ? { missingFields: error.missingFields } : {})
+      message: messages[code] || 'Component evaluation failed.',
+      ...(code === 'INSUFFICIENT_FARM_DATA' && Array.isArray(error && error.missingFields)
+        ? { missingFields: error.missingFields } : {})
     }
   };
 }
