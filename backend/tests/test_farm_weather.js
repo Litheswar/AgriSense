@@ -8,7 +8,8 @@ const disease = require('../services/farmDiseaseRiskService');
 async function run() {
   const oldMode = farmService.isMemoryMode; farmService.setMemoryMode(true); farmService.clearMemoryStore();
   try {
-    const farm = await farmService.createFarm({ name: 'Weather integration test', location: { state: 'Karnataka', district: 'Kolar', latitude: 12.9, longitude: 77.5 }, soil: { nitrogen: 81 }, crop: { name: 'Tomato', growthStage: 'vegetative' }, fieldConditions: { soilMoisture: 25 }, weather: { temperature: 20 }, diseaseContext: { detected: true, disease: 'Test disease' }, marketContext: { market: 'Kolar' } });
+    const ownerId = '000000000000000000000001';
+    const farm = await farmService.createFarm({ ownerId, name: 'Weather integration test', location: { state: 'Karnataka', district: 'Kolar', latitude: 12.9, longitude: 77.5 }, soil: { nitrogen: 81 }, crop: { name: 'Tomato', growthStage: 'vegetative' }, fieldConditions: { soilMoisture: 25 }, weather: { temperature: 20 }, diseaseContext: { detected: true, disease: 'Test disease' }, marketContext: { market: 'Kolar' } });
     const before = farm.toObject(); let calls = 0;
     const svc = new FarmWeatherService({ getWeather: async (lat, lon) => { calls++; assert.equal(lat, 12.9); assert.equal(lon, 77.5); return { temperature: 28, humidity: 71, rainfall: 1, recentRainfall: 6, rainProbability: 45, expectedRainfall: 4, recordedAt: new Date(), fetchedAt: new Date(), source: 'open-meteo' }; } });
     const refreshed = await svc.refreshWeather(farm._id.toString()); assert.equal(calls, 1); assert.equal(refreshed.sharedFarmState.weather.temperature, 28); assert.equal(refreshed.sharedFarmState.weather.source, 'open-meteo');
@@ -16,7 +17,7 @@ async function run() {
     const inputIrrigation = irrigation.extractIrrigationInput(refreshed.sharedFarmState); assert.equal(inputIrrigation.temperature, 28); assert.equal(inputIrrigation.expected_rainfall, 4);
     const inputDisease = disease.extractDiseaseRiskInput(refreshed.sharedFarmState); assert.equal(inputDisease.recent_rainfall, 6); assert.equal(inputDisease.rainfall, 1);
     await assert.rejects(() => svc.refreshWeather('not-an-id'), e => e.code === 'INVALID_FARM_ID');
-    const noLocation = await farmService.createFarm({ name: 'No coordinates', location: { state: 'Karnataka', district: 'Kolar' } });
+    const noLocation = await farmService.createFarm({ ownerId, name: 'No coordinates', location: { state: 'Karnataka', district: 'Kolar' } });
     await assert.rejects(() => weather.getWeather(noLocation.location.latitude, noLocation.location.longitude), e => e.code === 'INSUFFICIENT_LOCATION_DATA');
     console.log('farm weather integration: 6 checks passed');
   } finally { farmService.clearMemoryStore(); farmService.setMemoryMode(oldMode); }

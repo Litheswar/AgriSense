@@ -7,6 +7,10 @@
 const express = require('express');
 const router = express.Router();
 const farmController = require('../controllers/farmController');
+const { authenticate, loadOwnedFarm } = require('../middleware/authentication');
+
+router.use(authenticate);
+router.param('farmId', loadOwnedFarm);
 
 // Farm CRUD
 router.post('/', farmController.createFarm);

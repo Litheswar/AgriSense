@@ -43,7 +43,7 @@ from backend.models.market.engine.market_engine import MarketEngine
 def test_suite():
     passed = 0
     failed = 0
-    total = 10
+    total = 15
 
     print("=" * 80)
     print("AGRISENSE MARKET INTELLIGENCE ENGINE — UNIT TEST SUITE (MILESTONE 15)")
@@ -247,6 +247,7 @@ def test_suite():
         assert res["status"] == "SUCCESS"
         assert res["current_price"] == 2300.0
         assert res["trend"] == "Increasing"
+        assert res["raw_source"] == "local-fallback"
         print("  [PASS] Test 11: File-backed loading from sample_market_data.json parsed and analyzed successfully.")
         passed += 1
     except Exception as e:
@@ -320,6 +321,7 @@ def test_suite():
             assert records[0].crop == "Tomato"
             assert records[0].date == "2026-09-10"
             assert records[1].modal_price == 2300.0
+            assert all(record.raw_source == "data.gov.in (live)" for record in records)
 
             # Feed records into MarketEngine
             engine = MarketEngine(provider=provider)
@@ -333,19 +335,75 @@ def test_suite():
         print(f"  [FAIL] Test 13: {e}")
         failed += 1
 
-    # Test 14: Live API check (if DATA_GOV_IN_API_KEY is configured in environment)
+    # Test 14: Provider failures, malformed responses, and empty/malformed records never create prices.
+    try:
+        from unittest.mock import patch
+        import io
+        import urllib.error
+
+        def raises_http_error(_req, timeout=15):
+            raise urllib.error.HTTPError("https://api.data.gov.in/resource", 403, "Forbidden", {}, None)
+
+        provider = AgmarknetApiProvider(api_key="INVALID_TEST_KEY")
+        with patch("urllib.request.urlopen", side_effect=raises_http_error):
+            try:
+                provider.get_records(max_records=1)
+                raise AssertionError("Invalid key should surface provider HTTP failure")
+            except MarketDataError as error:
+                assert "403" in str(error)
+
+        with patch("urllib.request.urlopen", side_effect=urllib.error.URLError(TimeoutError("timed out"))):
+            try:
+                provider.get_records(max_records=1)
+                raise AssertionError("Network timeout should surface provider error")
+            except MarketDataError as error:
+                assert "network" in str(error).lower()
+
+        class MockHttpStream:
+            def __enter__(self): return io.BytesIO(b"{")
+            def __exit__(self, exc_type, exc_val, exc_tb): pass
+
+        with patch("urllib.request.urlopen", return_value=MockHttpStream()):
+            try:
+                provider.get_records(max_records=1)
+                raise AssertionError("Malformed JSON should surface provider error")
+            except MarketDataError as error:
+                assert "parse" in str(error).lower()
+
+        with patch("urllib.request.urlopen", return_value=io.BytesIO(b'{"records":{}}')):
+            try:
+                provider.get_records(max_records=1)
+                raise AssertionError("Non-list records payload should be rejected")
+            except MarketDataError as error:
+                assert "must be a list" in str(error)
+
+        empty = LocalMarketDataProvider(in_memory_records=[])
+        unavailable = MarketEngine(provider=empty).analyze_market(crop="Tomato")
+        assert unavailable["status"] == "UNAVAILABLE" and unavailable["current_price"] is None
+        try:
+            NormalizedMarketRecord.validate_and_create({"commodity": "Tomato", "market": "Kolar", "arrival_date": "01/01/2026", "min_price": "NaN", "max_price": 20, "modal_price": 10})
+            raise AssertionError("Non-finite prices should be rejected")
+        except MarketDataError:
+            pass
+        print("  [PASS] Test 14: Invalid key, timeout, malformed response, empty data, and invalid prices handled without fabricated values.")
+        passed += 1
+    except Exception as e:
+        print(f"  [FAIL] Test 14: {e}")
+        failed += 1
+
+    # Test 15: Optional live API smoke check. The dedicated live suite performs full verification.
     try:
         live_key = os.getenv("DATA_GOV_IN_API_KEY")
         if live_key:
             live_provider = AgmarknetApiProvider()
             records = live_provider.get_records(crop="Tomato", max_records=5)
-            print(f"  [PASS] Test 14: Live API query succeeded with {len(records)} records fetched.")
+            assert records, "Live API returned no valid normalized records."
+            print(f"  [PASS] Test 15: Live API query succeeded with {len(records)} normalized records fetched.")
             passed += 1
         else:
-            print("  [PASS] Test 14: Live API test skipped cleanly (DATA_GOV_IN_API_KEY not configured in .env).")
-            passed += 1
+            print("  [SKIP] Test 15: Live API not run (DATA_GOV_IN_API_KEY not configured).")
     except Exception as e:
-        print(f"  [FAIL] Test 14: Live API request error: {e}")
+        print(f"  [FAIL] Test 15: Live API request error: {e}")
         failed += 1
 
     print("=" * 80)

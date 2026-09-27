@@ -18,6 +18,7 @@ const http = require('http');
 const path = require('path');
 const mongoose = require('mongoose');
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
+process.env.JWT_SECRET ||= 'test-only-secret-generated-for-agrisense-m21';
 
 const app = require('../server');
 const farmService = require('../services/farmService');
@@ -25,6 +26,12 @@ const sharedFarmStateService = require('../services/sharedFarmStateService');
 const farmCropRecommendationService = require('../services/farmCropRecommendationService');
 const aiService = require('../services/aiService');
 const { connectDB, disconnectDB } = require('../config/db');
+const User = require('../db/models/User');
+const Farm = require('../db/models/Farm');
+const { issueToken } = require('../services/authTokenService');
+let testUser;
+let testToken;
+function createOwnedFarm(payload) { return farmService.createFarm({ ...payload, ownerId: testUser._id }); }
 
 let passed = 0;
 let failed = 0;
@@ -48,6 +55,7 @@ function makeHttpRequest(server, method, reqPath, body = null) {
       method: method,
       headers: {
         'Content-Type': 'application/json',
+        ...(testToken ? { Authorization: `Bearer ${testToken}` } : {}),
         ...(bodyStr ? { 'Content-Length': Buffer.byteLength(bodyStr) } : {})
       }
     };
@@ -81,6 +89,9 @@ async function runSuite() {
 
   const isAtlasConnected = await connectDB();
   console.log(`[Database Connection] Status: ${isAtlasConnected ? 'CONNECTED TO ATLAS' : 'MEMORY FALLBACK ACTIVE'}`);
+  if (!isAtlasConnected) throw new Error('Authenticated Farm regression requires Atlas.');
+  testUser = await User.create({ name: 'Crop Recommendation Test User', email: `crop-rec-${Date.now()}@example.test`, passwordHash: 'test-only-not-used' });
+  testToken = issueToken(testUser._id);
 
   const server = http.createServer(app);
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -97,7 +108,7 @@ async function runSuite() {
         weather: { temperature: 20.8, humidity: 82.0, rainfall: 202.9 }
       };
 
-      validFarm = await farmService.createFarm(farmPayload);
+      validFarm = await createOwnedFarm(farmPayload);
       const farmId = validFarm._id.toString();
 
       const result = await farmCropRecommendationService.getCropRecommendation(farmId);
@@ -145,7 +156,7 @@ async function runSuite() {
 
     // --- Test 3: Missing Soil N (Validation Error, No Defaults) ---
     try {
-      const incompleteFarm = await farmService.createFarm({
+      const incompleteFarm = await createOwnedFarm({
         name: 'Incomplete N Farm',
         location: { state: 'Punjab', district: 'Ludhiana' },
         soil: { phosphorus: 40, potassium: 50, ph: 6.8 }, // Missing nitrogen (N)
@@ -174,7 +185,7 @@ async function runSuite() {
 
     // --- Test 4: Missing Weather Temperature ---
     try {
-      const incompleteFarm = await farmService.createFarm({
+      const incompleteFarm = await createOwnedFarm({
         name: 'Incomplete Temp Farm',
         location: { state: 'Haryana', district: 'Karnal' },
         soil: { nitrogen: 80, phosphorus: 40, potassium: 40, ph: 6.5 },
@@ -203,7 +214,7 @@ async function runSuite() {
 
     // --- Test 5: Missing Weather Rainfall ---
     try {
-      const incompleteFarm = await farmService.createFarm({
+      const incompleteFarm = await createOwnedFarm({
         name: 'Incomplete Rainfall Farm',
         location: { state: 'Gujarat', district: 'Anand' },
         soil: { nitrogen: 75, phosphorus: 35, potassium: 45, ph: 7.0 },
@@ -278,7 +289,7 @@ async function runSuite() {
           weather: { temperature: 22.0, humidity: 80.0, rainfall: 210.0 }
         };
 
-        const atlasFarm = await farmService.createFarm(atlasFarmData);
+        const atlasFarm = await createOwnedFarm(atlasFarmData);
         const atlasFarmId = atlasFarm._id.toString();
 
         const atlasResult = await farmCropRecommendationService.getCropRecommendation(atlasFarmId);
@@ -349,6 +360,8 @@ async function runSuite() {
     }
 
   } finally {
+    if (testUser) await Farm.deleteMany({ ownerId: testUser._id });
+    if (testUser) await User.deleteOne({ _id: testUser._id });
     server.close();
     await disconnectDB();
   }

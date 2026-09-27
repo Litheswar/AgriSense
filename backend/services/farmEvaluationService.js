@@ -25,20 +25,26 @@ function componentFailure(error) {
   const status = code === 'INSUFFICIENT_FARM_DATA'
     ? code
     : (code === 'PROVIDER_UNAVAILABLE' || code === 'MARKET_PROVIDER_UNAVAILABLE' ? 'PROVIDER_UNAVAILABLE' : 'INTERNAL_ERROR');
+  const messages = {
+    INSUFFICIENT_FARM_DATA: 'Farm data is insufficient for this recommendation.',
+    PROVIDER_UNAVAILABLE: 'An external provider is temporarily unavailable.',
+    MARKET_PROVIDER_UNAVAILABLE: 'Market data is temporarily unavailable.'
+  };
   return {
     status,
     error: {
       code,
-      message: (error && error.message) || (error && error.error && error.error.message) || 'Component evaluation failed.',
-      ...(error && error.missingFields ? { missingFields: error.missingFields } : {})
+      message: messages[code] || 'Component evaluation failed.',
+      ...(code === 'INSUFFICIENT_FARM_DATA' && Array.isArray(error && error.missingFields)
+        ? { missingFields: error.missingFields } : {})
     }
   };
 }
 
 class FarmEvaluationService {
-  async evaluateFarm(farmId) {
+  async evaluateFarm(farmId, authorizedSharedState = null) {
     // A failure to retrieve canonical context is fatal; module failures below are partial.
-    const sharedFarmState = await sharedFarmStateService.getSharedFarmState(farmId);
+    const sharedFarmState = authorizedSharedState || await sharedFarmStateService.getSharedFarmState(farmId);
     const results = {};
     const run = async (key, work) => {
       try {
@@ -70,9 +76,16 @@ class FarmEvaluationService {
         }
       };
     } else {
+      const marketResult = results.market && ['SUCCESS', 'UNAVAILABLE'].includes(results.market.status)
+        ? results.market.data
+        : null;
+      const marketCache = marketResult && marketResult.engineInput && marketResult.recommendation
+        ? [{ query: marketResult.engineInput, result: marketResult.recommendation }]
+        : [];
       await run('cropRanking', () => rankingService.getCropRanking(farmId, {
         sharedFarmState,
-        cropRecommendationOutput
+        cropRecommendationOutput,
+        precomputedMarketResults: marketCache
       }));
     }
 

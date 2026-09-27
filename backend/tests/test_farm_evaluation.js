@@ -1,5 +1,10 @@
 /** Milestone 18K composite orchestration and HTTP contract checks. */
+process.env.JWT_SECRET ||= 'test-only-secret-generated-for-agrisense-m21';
 const http = require('http');
+const { connectDB, disconnectDB } = require('../config/db');
+const User = require('../db/models/User');
+const { issueToken } = require('../services/authTokenService');
+const { hashPassword } = require('../services/passwordService');
 const app = require('../server');
 const farmService = require('../services/farmService');
 const sharedStateService = require('../services/sharedFarmStateService');
@@ -25,9 +30,9 @@ function test(name, fn) {
   return Promise.resolve().then(fn).then(() => { passed++; console.log(`  [PASS] ${name}`); })
     .catch(error => { failed++; console.error(`  [FAIL] ${name}: ${error.message}`); });
 }
-function request(server, path) {
+function request(server, path, token) {
   return new Promise((resolve, reject) => {
-    http.get({ hostname: '127.0.0.1', port: server.address().port, path }, response => {
+    http.get({ hostname: '127.0.0.1', port: server.address().port, path, headers: token ? { authorization: `Bearer ${token}` } : {} }, response => {
       let body = ''; response.on('data', chunk => body += chunk);
       response.on('end', () => resolve({ status: response.statusCode, body: JSON.parse(body) }));
     }).on('error', reject);
@@ -40,8 +45,14 @@ async function run() {
   farmService.setMemoryMode(true);
   let farm;
   let server;
+  let testUser;
+  let token;
   try {
+    assert(await connectDB(), 'Atlas connection required for authenticated HTTP regression.');
+    testUser = await User.create({ name: 'Evaluation Test User', email: `evaluation-${Date.now()}@example.test`, passwordHash: await hashPassword(`fixture-${Date.now()}`) });
+    token = issueToken(testUser._id);
     farm = await farmService.createFarm({
+      ownerId: testUser._id,
       name: '18K evaluation test farm',
       location: { state: 'Karnataka', district: 'Kolar' },
       soil: { nitrogen: 80, phosphorus: 40, potassium: 40, ph: 6.5 },
@@ -64,10 +75,13 @@ async function run() {
     irrigation.getIrrigationRecommendation = async (id, state) => ({ success: true, farmId: id, sharedFarmState: state, recommendation: { irrigation_required: true } });
     fertilizer.getFertilizerRecommendation = async (id, state) => ({ success: true, farmId: id, sharedFarmState: state, recommendation: { caution: state.diseaseContext.disease } });
     diseaseRisk.getDiseaseRiskAssessment = async (id, state) => ({ success: true, farmId: id, sharedFarmState: state, recommendation: { risk_level: 'Medium' } });
-    market.getMarketIntelligence = async (id, state) => ({ success: true, farmId: id, sharedFarmState: state, recommendation: { data_available: true, market_score: 75 } });
+    const marketRecommendation = { status: 'SUCCESS', data_available: true, crop: 'Tomato', market: 'Kolar', state: 'Karnataka', current_price: 2300, market_score: 75, raw_source: 'local-fallback' };
+    market.getMarketIntelligence = async (id, state) => ({ success: true, farmId: id, sharedFarmState: state, engineInput: { crop: 'Tomato', market: 'Kolar', state: 'Karnataka' }, recommendation: marketRecommendation });
     ranking.getCropRanking = async (id, options) => {
       assert(options.sharedFarmState === canonical, 'ranking did not receive canonical state');
       assert(options.cropRecommendationOutput === recommendation, 'ranking did not consume crop recommendation output');
+      assert(options.precomputedMarketResults.length === 1, 'ranking did not receive the composite market result for reuse');
+      assert(options.precomputedMarketResults[0].result === marketRecommendation, 'ranking received the wrong cached market result');
       return { success: true, farmId: id, agronomicPrediction: options.cropRecommendationOutput, recommendation: { ranked_crops: [] } };
     };
 
@@ -93,10 +107,11 @@ async function run() {
     });
 
     await test('failed crop inference marks ranking dependency unavailable', async () => {
-      crop.getCropRecommendation = async () => { throw { error: { code: 'PYTHON_SPAWN_ERROR', message: 'unavailable' } }; };
+      crop.getCropRecommendation = async () => { throw { error: { code: 'PYTHON_SPAWN_ERROR', message: 'C:\\private\\traceback.py: secret' } }; };
       const result = await evaluation.evaluateFarm(farmId);
       assert(result.status === 'PARTIAL', 'expected partial result');
       assert(result.recommendations.cropRecommendation.status === 'INTERNAL_ERROR', 'Python failure classification wrong');
+      assert(result.recommendations.cropRecommendation.error.message === 'Component evaluation failed.', 'internal error details leaked');
       assert(result.recommendations.cropRanking.status === 'INSUFFICIENT_DEPENDENCY', 'ranking dependency not reported');
       crop.getCropRecommendation = async (id, state) => ({ success: true, farmId: id, sharedFarmState: state, recommendation });
     });
@@ -107,7 +122,7 @@ async function run() {
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
     await test('GET /api/farms/:farmId/evaluation returns composite response', async () => {
       const before = JSON.stringify((await farmService.getFarmById(farmId)).toObject());
-      const response = await request(server, `/api/farms/${farmId}/evaluation`);
+      const response = await request(server, `/api/farms/${farmId}/evaluation`, token);
       assert(response.status === 200 && response.body.farmId === farmId, 'endpoint response incorrect');
       assert(response.body.status === 'SUCCESS', 'complete real local evaluation should succeed');
       for (const key of ['cropRecommendation', 'irrigation', 'fertilizer', 'diseaseRisk', 'market', 'cropRanking']) {
@@ -116,18 +131,20 @@ async function run() {
       assert(JSON.stringify((await farmService.getFarmById(farmId)).toObject()) === before, 'HTTP evaluation modified Farm');
     });
     await test('invalid farm ID maps to existing HTTP 400 contract', async () => {
-      const response = await request(server, '/api/farms/not-an-id/evaluation');
+      const response = await request(server, '/api/farms/not-an-id/evaluation', token);
       assert(response.status === 400 && response.body.error.code === 'INVALID_FARM_ID', 'invalid id mapping incorrect');
     });
     await test('missing farm maps to existing HTTP 404 contract', async () => {
-      const response = await request(server, '/api/farms/507f1f77bcf86cd799439011/evaluation');
+      const response = await request(server, '/api/farms/507f1f77bcf86cd799439011/evaluation', token);
       assert(response.status === 404 && response.body.error.code === 'FARM_NOT_FOUND', 'not found mapping incorrect');
     });
   } finally {
     if (server) await new Promise(resolve => server.close(resolve));
     methods.forEach(([object, key], index) => { object[key] = originals[index]; });
     if (farm) await farmService.deleteFarm(farm._id.toString()).catch(() => {});
+    if (testUser) await User.deleteOne({ _id: testUser._id });
     farmService.setMemoryMode(priorMode);
+    await disconnectDB();
   }
   console.log(`\nMILESTONE 18K SUMMARY: ${passed} PASSED, ${failed} FAILED`);
   if (failed) process.exitCode = 1;

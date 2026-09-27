@@ -12,13 +12,13 @@ function freshness(weather, now = Date.now()) {
 }
 class FarmWeatherService {
   constructor(provider = weatherService) { this.provider = provider; }
-  async getWeather(farmId) {
-    const farm = await farmService.getFarmById(farmId);
+  async getWeather(farmId, authorizedFarm = null) {
+    const farm = authorizedFarm || await farmService.getFarmById(farmId);
     const weather = farm.weather && farm.weather.toObject ? farm.weather.toObject() : (farm.weather || {});
     return { success: true, farmId: farm._id.toString(), weather, freshness: freshness(weather) };
   }
-  async refreshWeather(farmId) {
-    const farm = await farmService.getFarmById(farmId);
+  async refreshWeather(farmId, authorizedFarm = null) {
+    const farm = authorizedFarm || await farmService.getFarmById(farmId);
     const location = farm.location || {};
     const normalized = await this.provider.getWeather(location.latitude, location.longitude);
     farm.weather = normalized;

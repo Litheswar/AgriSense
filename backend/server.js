@@ -6,15 +6,30 @@ const express = require('express');
 const cors = require('cors');
 const aiRoutes = require('./routes/aiRoutes');
 const farmRoutes = require('./routes/farmRoutes');
+const authRoutes = require('./routes/authRoutes');
 const config = require('./config/aiConfig');
 const { connectDB, getDetailedStatus } = require('./config/db');
 const farmService = require('./services/farmService');
 
 const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// JWTs are sent in the Authorization header; browser cookies are not used.
+// Permit same-origin/non-browser requests and explicitly configured frontend origins.
+const allowedOrigins = new Set(
+  (process.env.FRONTEND_ORIGIN || 'http://localhost:5173')
+    .split(',').map(origin => origin.trim()).filter(Boolean)
+);
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    const error = new Error('Origin is not allowed by CORS.');
+    error.status = 403;
+    error.code = 'CORS_ORIGIN_DENIED';
+    return callback(error);
+  },
+  credentials: false
+}));
+app.use(express.json({ limit: '100kb', strict: true }));
 
 // Root health & status
 app.get('/', (req, res) => {
@@ -37,6 +52,7 @@ app.get('/', (req, res) => {
 
 // Mount routes
 app.use('/api/ai', aiRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/farms', farmRoutes);
 
 // 404 handler
@@ -45,19 +61,33 @@ app.use((req, res) => {
     success: false,
     error: {
       code: 'NOT_FOUND',
-      message: `Resource not found: ${req.method} ${req.url}`
+      message: 'Resource not found.'
     }
   });
 });
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error('[AgriSense Server Error]', err);
-  res.status(500).json({
+  // Error objects from JSON parsers can retain the raw request body (including passwords).
+  console.error('[AgriSense Server Error]', err && (err.code || err.name) || 'unknown error');
+  const status = Number.isInteger(err.status) && err.status >= 400 && err.status < 500 ? err.status : 500;
+  const knownClientError = status === 400 || status === 413 || status === 415 || status === 403;
+  const code = status === 400 ? 'INVALID_JSON'
+    : status === 413 ? 'PAYLOAD_TOO_LARGE'
+      : status === 415 ? 'UNSUPPORTED_MEDIA_TYPE'
+        : status === 403 && err.code === 'CORS_ORIGIN_DENIED' ? 'CORS_ORIGIN_DENIED'
+          : 'INTERNAL_SERVER_ERROR';
+  const messages = {
+    INVALID_JSON: 'Request body contains invalid JSON.',
+    PAYLOAD_TOO_LARGE: 'Request body exceeds the 100kb limit.',
+    UNSUPPORTED_MEDIA_TYPE: 'Content type must be application/json.',
+    CORS_ORIGIN_DENIED: 'Origin is not allowed.'
+  };
+  res.status(status).json({
     success: false,
     error: {
-      code: 'INTERNAL_SERVER_ERROR',
-      message: err.message || 'An unexpected server error occurred.'
+      code: knownClientError ? code : 'INTERNAL_SERVER_ERROR',
+      message: messages[code] || 'An unexpected server error occurred.'
     }
   });
 });

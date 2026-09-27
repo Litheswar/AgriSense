@@ -83,7 +83,7 @@ class FarmService {
    * @param {string} farmId
    * @returns {Promise<object>} Farm document
    */
-  async getFarmById(farmId) {
+  async getFarmById(farmId, ownerId = null) {
     if (!this.isValidId(farmId)) {
       const err = new Error(`Invalid farm ID format: '${farmId}'`);
       err.code = 'INVALID_FARM_ID';
@@ -92,9 +92,12 @@ class FarmService {
 
     let farm = null;
     if (this._useLiveDB()) {
-      farm = await Farm.findById(farmId);
+      farm = ownerId
+        ? await Farm.findOne({ _id: farmId, ownerId })
+        : await Farm.findById(farmId);
     } else {
       farm = this.memoryStore.get(farmId.toString()) || null;
+      if (farm && ownerId && farm.ownerId.toString() !== ownerId.toString()) farm = null;
     }
 
     if (!farm) {
@@ -113,7 +116,7 @@ class FarmService {
    * @param {object} updateData
    * @returns {Promise<object>} Updated Farm document
    */
-  async updateFarm(farmId, updateData) {
+  async updateFarm(farmId, updateData, authorizedFarm = null) {
     if (!this.isValidId(farmId)) {
       const err = new Error(`Invalid farm ID format: '${farmId}'`);
       err.code = 'INVALID_FARM_ID';
@@ -144,7 +147,7 @@ class FarmService {
       }
     }
 
-    const farm = await this.getFarmById(farmId);
+    const farm = authorizedFarm || await this.getFarmById(farmId);
 
     // Merge updates
     for (const [key, val] of Object.entries(sanitizedData)) {
@@ -186,7 +189,7 @@ class FarmService {
    * @param {string} farmId
    * @returns {Promise<object>} Deleted farm details
    */
-  async deleteFarm(farmId) {
+  async deleteFarm(farmId, authorizedFarm = null) {
     if (!this.isValidId(farmId)) {
       const err = new Error(`Invalid farm ID format: '${farmId}'`);
       err.code = 'INVALID_FARM_ID';
@@ -194,7 +197,14 @@ class FarmService {
     }
 
     let farm = null;
-    if (this._useLiveDB()) {
+    if (authorizedFarm) {
+      farm = authorizedFarm;
+      if (this._useLiveDB()) {
+        await farm.deleteOne();
+      } else {
+        this.memoryStore.delete(farmId.toString());
+      }
+    } else if (this._useLiveDB()) {
       farm = await Farm.findByIdAndDelete(farmId);
     } else {
       farm = this.memoryStore.get(farmId.toString()) || null;
@@ -223,7 +233,9 @@ class FarmService {
     if (this._useLiveDB()) {
       return await Farm.find(filter).sort({ updatedAt: -1 }).limit(limit);
     } else {
-      return Array.from(this.memoryStore.values()).slice(0, limit);
+      return Array.from(this.memoryStore.values())
+        .filter(farm => Object.entries(filter).every(([key, value]) => String(farm[key]) === String(value)))
+        .slice(0, limit);
     }
   }
 

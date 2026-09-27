@@ -40,28 +40,42 @@ function sendError(res, err) {
     code === 'INVALID_LONGITUDE'
   ) {
     status = 400;
+  } else if (code.includes('PROVIDER_UNAVAILABLE') || code.includes('PROVIDER_TIMEOUT') || code === 'TIMEOUT') {
+    status = 503;
+  } else if (code === 'CONFLICT') {
+    status = 409;
   }
+
+  const safeMessages = {
+    FARM_NOT_FOUND: 'Farm not found.',
+    INVALID_FARM_ID: 'Invalid farm ID.',
+    VALIDATION_ERROR: 'Request data is invalid.',
+    INVALID_INPUT: 'Request data is invalid.',
+    INSUFFICIENT_FARM_DATA: 'Farm data is insufficient for this recommendation.',
+    WEATHER_PROVIDER_UNAVAILABLE: 'Weather provider is temporarily unavailable.',
+    WEATHER_PROVIDER_TIMEOUT: 'Weather provider timed out.',
+    CONFLICT: 'The request conflicts with the current resource state.'
+  };
 
   return res.status(status).json({
     success: false,
     error: {
       code,
-      message: err.message || (err.error && err.error.message) || 'An unexpected error occurred.',
-      ...(err.details ? { details: err.details } : {}),
-      ...(err.missingFields ? { missingFields: err.missingFields } : {})
+      message: safeMessages[code] || (status === 400 ? 'Request data is invalid.' : 'An unexpected error occurred.'),
+      ...(code === 'INSUFFICIENT_FARM_DATA' && Array.isArray(err.missingFields) ? { missingFields: err.missingFields } : {})
     }
   });
 }
 
 /** GET /api/farms/:farmId/weather — read persisted weather only. */
 exports.getFarmWeather = async (req, res) => {
-  try { return res.status(200).json(await farmWeatherService.getWeather(req.params.farmId)); }
+  try { return res.status(200).json(await farmWeatherService.getWeather(req.params.farmId, req.farm)); }
   catch (err) { return sendError(res, err); }
 };
 
 /** POST /api/farms/:farmId/weather/refresh — retrieve and persist live weather. */
 exports.refreshFarmWeather = async (req, res) => {
-  try { return res.status(200).json(await farmWeatherService.refreshWeather(req.params.farmId)); }
+  try { return res.status(200).json(await farmWeatherService.refreshWeather(req.params.farmId, req.farm)); }
   catch (err) { return sendError(res, err); }
 };
 
@@ -71,7 +85,12 @@ exports.refreshFarmWeather = async (req, res) => {
  */
 exports.createFarm = async (req, res) => {
   try {
-    const farm = await farmService.createFarm(req.body);
+    if (Object.prototype.hasOwnProperty.call(req.body || {}, 'ownerId')) {
+      const err = new Error('ownerId is assigned from the authenticated user.');
+      err.code = 'INVALID_INPUT';
+      throw err;
+    }
+    const farm = await farmService.createFarm({ ...req.body, ownerId: req.user.id });
     return res.status(201).json({
       success: true,
       farm: farm.toObject ? farm.toObject() : farm,
@@ -88,7 +107,7 @@ exports.createFarm = async (req, res) => {
  */
 exports.getFarm = async (req, res) => {
   try {
-    const farm = await farmService.getFarmById(req.params.farmId);
+    const farm = req.farm;
     return res.status(200).json({
       success: true,
       farm: farm.toObject ? farm.toObject() : farm,
@@ -105,7 +124,7 @@ exports.getFarm = async (req, res) => {
  */
 exports.getSharedFarmState = async (req, res) => {
   try {
-    const sharedState = await sharedFarmStateService.getSharedFarmState(req.params.farmId);
+    const sharedState = req.farm.toSharedFarmState();
     return res.status(200).json({
       success: true,
       sharedFarmState: sharedState
@@ -121,7 +140,7 @@ exports.getSharedFarmState = async (req, res) => {
  */
 exports.getCropRecommendation = async (req, res) => {
   try {
-    const result = await farmCropRecommendationService.getCropRecommendation(req.params.farmId);
+    const result = await farmCropRecommendationService.getCropRecommendation(req.params.farmId, req.farm.toSharedFarmState());
     return res.status(200).json(result);
   } catch (err) {
     return sendError(res, err);
@@ -134,7 +153,7 @@ exports.getCropRecommendation = async (req, res) => {
  */
 exports.getIrrigationRecommendation = async (req, res) => {
   try {
-    const result = await farmIrrigationService.getIrrigationRecommendation(req.params.farmId);
+    const result = await farmIrrigationService.getIrrigationRecommendation(req.params.farmId, req.farm.toSharedFarmState());
     return res.status(200).json(result);
   } catch (err) {
     return sendError(res, err);
@@ -147,7 +166,7 @@ exports.getIrrigationRecommendation = async (req, res) => {
  */
 exports.getFertilizerRecommendation = async (req, res) => {
   try {
-    const result = await farmFertilizerService.getFertilizerRecommendation(req.params.farmId);
+    const result = await farmFertilizerService.getFertilizerRecommendation(req.params.farmId, req.farm.toSharedFarmState());
     return res.status(200).json(result);
   } catch (err) {
     return sendError(res, err);
@@ -160,7 +179,7 @@ exports.getFertilizerRecommendation = async (req, res) => {
  */
 exports.getDiseaseRiskAssessment = async (req, res) => {
   try {
-    const result = await farmDiseaseRiskService.getDiseaseRiskAssessment(req.params.farmId);
+    const result = await farmDiseaseRiskService.getDiseaseRiskAssessment(req.params.farmId, req.farm.toSharedFarmState());
     return res.status(200).json(result);
   } catch (err) {
     return sendError(res, err);
@@ -173,7 +192,7 @@ exports.getDiseaseRiskAssessment = async (req, res) => {
  */
 exports.getMarketIntelligence = async (req, res) => {
   try {
-    const result = await farmMarketService.getMarketIntelligence(req.params.farmId);
+    const result = await farmMarketService.getMarketIntelligence(req.params.farmId, req.farm.toSharedFarmState());
     return res.status(200).json(result);
   } catch (err) {
     return sendError(res, err);
@@ -187,11 +206,34 @@ exports.getMarketIntelligence = async (req, res) => {
 exports.getCropRanking = async (req, res) => {
   try {
     const options = {};
+    options.sharedFarmState = req.farm.toSharedFarmState();
     if (req.query.agronomic_weight !== undefined || req.query.market_weight !== undefined) {
-      options.custom_weights = {
-        agronomic: req.query.agronomic_weight !== undefined ? parseFloat(req.query.agronomic_weight) : 0.7,
-        market: req.query.market_weight !== undefined ? parseFloat(req.query.market_weight) : 0.3
+      const parseWeight = (key, fallback) => {
+        const raw = req.query[key];
+        if (raw === undefined) return fallback;
+        if (typeof raw !== 'string' || raw.trim() === '') return NaN;
+        return Number(raw);
       };
+      const agronomic = parseWeight('agronomic_weight', 0.7);
+      const market = parseWeight('market_weight', 0.3);
+      if (!Number.isFinite(agronomic) || !Number.isFinite(market)
+        || agronomic < 0 || market < 0 || agronomic > 1 || market > 1
+        || Math.abs(agronomic + market - 1) > 1e-9) {
+        const err = new Error('Crop ranking weights must be finite values between 0 and 1 and sum to 1.');
+        err.code = 'INVALID_INPUT';
+        throw err;
+      }
+      options.custom_weights = {
+        agronomic,
+        market
+      };
+    }
+    for (const key of ['market', 'state', 'district']) {
+      if (req.query[key] !== undefined && (typeof req.query[key] !== 'string' || req.query[key].length > 120)) {
+        const err = new Error(`${key} must be a string of at most 120 characters.`);
+        err.code = 'INVALID_INPUT';
+        throw err;
+      }
     }
     if (req.query.market || req.query.state || req.query.district) {
       options.market_context = {
@@ -210,7 +252,7 @@ exports.getCropRanking = async (req, res) => {
 /** GET /api/farms/:farmId/evaluation — read-only composite farm evaluation. */
 exports.getFarmEvaluation = async (req, res) => {
   try {
-    const result = await farmEvaluationService.evaluateFarm(req.params.farmId);
+    const result = await farmEvaluationService.evaluateFarm(req.params.farmId, req.farm.toSharedFarmState());
     return res.status(200).json(result);
   } catch (err) {
     return sendError(res, err);
@@ -223,7 +265,12 @@ exports.getFarmEvaluation = async (req, res) => {
  */
 exports.updateFarm = async (req, res) => {
   try {
-    const farm = await farmService.updateFarm(req.params.farmId, req.body);
+    if (Object.prototype.hasOwnProperty.call(req.body || {}, 'ownerId')) {
+      const err = new Error('ownerId cannot be changed.');
+      err.code = 'INVALID_INPUT';
+      throw err;
+    }
+    const farm = await farmService.updateFarm(req.params.farmId, req.body, req.farm);
     return res.status(200).json({
       success: true,
       farm: farm.toObject ? farm.toObject() : farm,
@@ -240,7 +287,7 @@ exports.updateFarm = async (req, res) => {
  */
 exports.deleteFarm = async (req, res) => {
   try {
-    const result = await farmService.deleteFarm(req.params.farmId);
+    const result = await farmService.deleteFarm(req.params.farmId, req.farm);
     return res.status(200).json({
       success: true,
       result
@@ -256,7 +303,7 @@ exports.deleteFarm = async (req, res) => {
  */
 exports.listFarms = async (req, res) => {
   try {
-    const farms = await farmService.listFarms();
+    const farms = await farmService.listFarms({ ownerId: req.user.id });
     return res.status(200).json({
       success: true,
       count: farms.length,

@@ -126,7 +126,8 @@ class CropRankingEngine:
         self,
         crop_recommendation_output: Dict[str, Any],
         market_context: Optional[Dict[str, Any]] = None,
-        custom_weights: Optional[Dict[str, float]] = None
+        custom_weights: Optional[Dict[str, float]] = None,
+        precomputed_market_results: Optional[List[Dict[str, Any]]] = None
     ) -> Dict[str, Any]:
         """
         Rank candidate crops from a CropRecommender inference output dictionary.
@@ -152,14 +153,16 @@ class CropRankingEngine:
         return self.rank_candidates(
             candidates=candidates,
             market_context=market_context,
-            custom_weights=custom_weights
+            custom_weights=custom_weights,
+            precomputed_market_results=precomputed_market_results
         )
 
     def rank_candidates(
         self,
         candidates: List[Dict[str, Any]],
         market_context: Optional[Dict[str, Any]] = None,
-        custom_weights: Optional[Dict[str, float]] = None
+        custom_weights: Optional[Dict[str, float]] = None,
+        precomputed_market_results: Optional[List[Dict[str, Any]]] = None
     ) -> Dict[str, Any]:
         """
         Rank an explicit list of candidate crops with agronomic and market signals.
@@ -177,6 +180,15 @@ class CropRankingEngine:
         state_name = market_ctx.get("state")
         district_name = market_ctx.get("district")
 
+        def lookup_key(crop: Any, market: Any, state: Any) -> tuple[str, str, str]:
+            return tuple(str(value or "").strip().casefold() for value in (crop, market, state))
+
+        precomputed = {}
+        for entry in precomputed_market_results or []:
+            if isinstance(entry, dict) and isinstance(entry.get("query"), dict) and isinstance(entry.get("result"), dict):
+                query = entry["query"]
+                precomputed[lookup_key(query.get("crop"), query.get("market"), query.get("state"))] = entry["result"]
+
         evaluated_candidates = []
 
         for cand in candidates:
@@ -186,7 +198,10 @@ class CropRankingEngine:
 
             # Query Market Engine if available
             market_res = None
-            if self.market_engine is not None:
+            cached_result = precomputed.get(lookup_key(crop_name, market_name, state_name))
+            if cached_result is not None:
+                market_res = cached_result
+            elif self.market_engine is not None:
                 try:
                     market_res = self.market_engine.analyze_market(
                         crop=crop_name,

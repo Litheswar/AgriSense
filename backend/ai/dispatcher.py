@@ -248,19 +248,22 @@ def dispatch_ai_task(task: str, payload: Optional[Dict[str, Any]] = None) -> Dic
             crop_rec_out = input_data.get("crop_recommendation_output")
             candidates = input_data.get("candidates")
             market_ctx = input_data.get("market_context")
+            precomputed_market_results = input_data.get("precomputed_market_results")
             weights = input_data.get("custom_weights")
 
             if crop_rec_out:
                 result = ranking_engine.rank_crops(
                     crop_recommendation_output=crop_rec_out,
                     market_context=market_ctx,
-                    custom_weights=weights
+                    custom_weights=weights,
+                    precomputed_market_results=precomputed_market_results
                 )
             elif candidates:
                 result = ranking_engine.rank_candidates(
                     candidates=candidates,
                     market_context=market_ctx,
-                    custom_weights=weights
+                    custom_weights=weights,
+                    precomputed_market_results=precomputed_market_results
                 )
             else:
                 return {

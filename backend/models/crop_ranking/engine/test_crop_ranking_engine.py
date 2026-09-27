@@ -39,7 +39,7 @@ from backend.models.crop_recommendation.inference.predict import CropRecommender
 def test_suite():
     passed = 0
     failed = 0
-    total = 11
+    total = 12
 
     print("=" * 80)
     print("AGRISENSE CROP RANKING ENGINE — UNIT & INTEGRATION TEST SUITE (MILESTONE 16)")
@@ -277,6 +277,36 @@ def test_suite():
         passed += 1
     except Exception as e:
         print(f"  [FAIL] Test 11: {e}")
+        failed += 1
+
+    # Test 12: Reuse the Composite Evaluation market result for an identical crop/context.
+    try:
+        class CountingMarketEngine:
+            def __init__(self, wrapped):
+                self.wrapped = wrapped
+                self.calls = []
+            def analyze_market(self, crop, market=None, state=None):
+                self.calls.append((crop, market, state))
+                return self.wrapped.analyze_market(crop=crop, market=market, state=state)
+
+        counting = CountingMarketEngine(market_engine)
+        cached = market_engine.analyze_market(crop="Tomato", market="Kolar", state="Karnataka")
+        engine = CropRankingEngine(market_engine=counting)
+        result = engine.rank_candidates(
+            [{"crop": "Tomato", "probability": 0.9}, {"crop": "Potato", "probability": 0.6}],
+            market_context={"market": "Kolar", "state": "Karnataka"},
+            precomputed_market_results=[{
+                "query": {"crop": "Tomato", "market": "Kolar", "state": "Karnataka"},
+                "result": cached
+            }]
+        )
+        assert counting.calls == [("Potato", "Kolar", "Karnataka")], counting.calls
+        tomato = next(item for item in result["ranked_crops"] if item["crop"] == "Tomato")
+        assert tomato["market_data_available"] is True
+        print("  [PASS] Test 12: Reused matching composite market result; only distinct candidate queried the provider.")
+        passed += 1
+    except Exception as e:
+        print(f"  [FAIL] Test 12: {e}")
         failed += 1
 
     print("=" * 80)
