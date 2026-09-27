@@ -135,6 +135,10 @@ async function main() {
     assert.equal((await request(base, 'GET', `/api/farms/${farmAId}/weather`)).status, 401);
 
     aiService.detectDisease = async () => ({ result: { predicted_disease: 'Healthy', confidence: 0.98 } });
+    assert.equal((await request(base, 'POST', '/api/ai/disease-detection', { image_path: ['not', 'a', 'path'] })).status, 400,
+      'disease image path must be a bounded string');
+    assert.equal((await request(base, 'POST', '/api/ai/disease-detection', { image_path: `x${'x'.repeat(1024)}` })).status, 400,
+      'oversized disease image paths must be rejected');
     assert.equal((await request(base, 'POST', '/api/ai/disease-detection', { image_path: 'test-image.jpg' })).status, 200, 'standalone disease detection remains public');
     const diseaseOther = await request(base, 'POST', '/api/ai/disease-detection', { image_path: 'test-image.jpg', farmId: farmAId }, registerB.body.token);
     assert.equal(diseaseOther.status, 404);

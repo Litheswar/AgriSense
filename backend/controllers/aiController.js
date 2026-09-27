@@ -117,12 +117,15 @@ exports.handleCropRecommendation = async (req, res) => {
 exports.handleDiseaseDetection = async (req, res) => {
   try {
     const imagePath = req.body.image_path || (req.body.input && req.body.input.image_path);
-    if (!imagePath) {
+    if (typeof imagePath !== 'string' || imagePath.trim().length === 0 || imagePath.length > 1024) {
+      const missing = typeof imagePath !== 'string' || imagePath.trim().length === 0;
       return res.status(400).json({
         success: false,
         error: {
-          code: 'MISSING_IMAGE_PATH',
-          message: "Request body must include 'image_path' string."
+          code: missing ? 'MISSING_IMAGE_PATH' : 'INVALID_INPUT',
+          message: missing
+            ? "Request body must include 'image_path' string."
+            : "'image_path' must be at most 1024 characters."
         }
       });
     }
