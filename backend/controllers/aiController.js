@@ -26,7 +26,10 @@ function sendError(res, err, defaultStatus = 400) {
     code === 'DiseaseInferenceError'
   ) {
     status = 400;
-  } else if (code === 'TIMEOUT' || code === 'PROVIDER_UNAVAILABLE' || code === 'AI_SERVER_UNAVAILABLE') {
+  } else if (
+    code === 'TIMEOUT' || code === 'PROVIDER_UNAVAILABLE' || code === 'AI_SERVER_UNAVAILABLE'
+    || code === 'PYTHON_SPAWN_ERROR' || code === 'EMPTY_RESPONSE'
+  ) {
     status = 503;
   } else if (code === 'INTERNAL_ERROR' || code === 'AI_SERVICE_ERROR') {
     status = 500;

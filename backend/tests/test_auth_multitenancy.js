@@ -149,6 +149,10 @@ async function main() {
     assert.equal((await Farm.findById(farmAId)).diseaseContext.disease, 'Healthy');
     aiService.predictCrop = async () => ({ result: { predicted_crop: 'test' } });
     assert.equal((await request(base, 'POST', '/api/ai/crop-recommendation', { input: {} })).status, 200, 'standalone AI endpoint remains public');
+    aiService.predictCrop = async () => { throw { error: { code: 'PYTHON_SPAWN_ERROR', message: 'C:\\private\\python.exe: secret' } }; };
+    const sanitizedAiError = await request(base, 'POST', '/api/ai/crop-recommendation', { input: {} });
+    assert.equal(sanitizedAiError.status, 503, 'AI process failures must map to dependency unavailable');
+    assert.equal(sanitizedAiError.body.error.message, 'An unexpected error occurred in AI service.', 'AI process details must not reach clients');
 
     const deletedUserToken = jwt.sign({}, process.env.JWT_SECRET, { algorithm: 'HS256', subject: userB._id.toString(), issuer: 'agrisense-api', audience: 'agrisense-client', expiresIn: '1h' });
     await User.deleteOne({ _id: userB._id });
