@@ -14,12 +14,17 @@
  * 10. Complete Shared Farm State can be stored, retrieved, and transformed.
  */
 
+process.env.JWT_SECRET ||= 'test-only-secret-generated-for-agrisense-m21';
 const http = require('http');
 const mongoose = require('mongoose');
 const app = require('../server');
 const Farm = require('../db/models/Farm');
 const farmService = require('../services/farmService');
 const { connectDB, disconnectDB } = require('../config/db');
+const User = require('../db/models/User');
+const { hashPassword } = require('../services/passwordService');
+let testToken;
+let testUser;
 
 let passed = 0;
 let failed = 0;
@@ -45,6 +50,7 @@ function makeHttpRequest(server, method, path, body = null) {
       method: method,
       headers: {
         'Content-Type': 'application/json',
+        ...(testToken ? { Authorization: `Bearer ${testToken}` } : {}),
         ...(bodyStr ? { 'Content-Length': Buffer.byteLength(bodyStr) } : {})
       }
     };
@@ -84,6 +90,10 @@ async function runTests() {
   } else {
     console.log('[Test Suite] MongoDB Mode: LIVE MONGODB CONNECTION');
   }
+
+  if (!isDbLive) throw new Error('Authenticated Farm HTTP tests require MongoDB Atlas.');
+  testUser = await User.create({ name: 'Farm CRUD Test User', email: `farm-crud-${Date.now()}@example.test`, passwordHash: await hashPassword(`fixture-${Date.now()}`) });
+  testToken = require('../services/authTokenService').issueToken(testUser._id);
 
   const server = http.createServer(app);
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -346,6 +356,8 @@ async function runTests() {
     }
 
   } finally {
+    if (testUser) await Farm.deleteMany({ ownerId: testUser._id });
+    if (testUser) await User.deleteOne({ _id: testUser._id });
     server.close();
     await disconnectDB();
   }

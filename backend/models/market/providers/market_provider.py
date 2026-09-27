@@ -7,6 +7,7 @@ Supports both deterministic local mock data and future Agmarknet/data.gov.in liv
 from dataclasses import dataclass, asdict
 from datetime import datetime
 import json
+import math
 import os
 from typing import Dict, Any, List, Optional
 
@@ -41,13 +42,20 @@ class NormalizedMarketRecord:
             raise MarketDataError("Market record must be a dictionary.")
 
         # 1. Validate Crop
-        crop = raw.get("crop") or raw.get("commodity") or raw.get("Commodity")
+        def first_value(*keys: str) -> Any:
+            for key in keys:
+                value = raw.get(key)
+                if value is not None and value != "":
+                    return value
+            return None
+
+        crop = first_value("crop", "commodity", "Commodity")
         if not crop or not isinstance(crop, str) or not crop.strip():
             raise MarketDataError("Market record missing valid non-empty 'crop' name.")
         crop = crop.strip()
 
         # 2. Validate Market
-        market = raw.get("market") or raw.get("Market") or raw.get("mandi")
+        market = first_value("market", "Market", "mandi")
         if not market or not isinstance(market, str) or not market.strip():
             raise MarketDataError("Market record missing valid non-empty 'market' name.")
         market = market.strip()
@@ -66,7 +74,7 @@ class NormalizedMarketRecord:
             district = None
 
         # 4. Validate Date
-        date_str = raw.get("date") or raw.get("Arrival_Date") or raw.get("arrival_date")
+        date_str = first_value("date", "Arrival_Date", "arrival_date")
         if not date_str or not isinstance(date_str, str):
             raise MarketDataError("Market record missing valid 'date' string.")
         
@@ -74,13 +82,15 @@ class NormalizedMarketRecord:
         normalized_date = cls._normalize_date(date_str.strip())
 
         # 5. Validate Prices
-        min_price = cls._validate_price(raw.get("min_price") or raw.get("Min_Price") or raw.get("min_price_inr"), "min_price")
-        max_price = cls._validate_price(raw.get("max_price") or raw.get("Max_Price") or raw.get("max_price_inr"), "max_price")
-        modal_price = cls._validate_price(raw.get("modal_price") or raw.get("Modal_Price") or raw.get("modal_price_inr") or raw.get("price"), "modal_price")
+        min_price = cls._validate_price(first_value("min_price", "Min_Price", "min_price_inr"), "min_price")
+        max_price = cls._validate_price(first_value("max_price", "Max_Price", "max_price_inr"), "max_price")
+        modal_price = cls._validate_price(first_value("modal_price", "Modal_Price", "modal_price_inr", "price"), "modal_price")
 
         # Sanity check: min <= modal <= max if min and max are non-zero
         if min_price > max_price:
             raise MarketDataError(f"Invalid price bounds: min_price ({min_price}) > max_price ({max_price}).")
+        if modal_price < min_price or modal_price > max_price:
+            raise MarketDataError(f"Invalid price bounds: modal_price ({modal_price}) must be between min_price and max_price.")
 
         # 6. Unit
         unit = raw.get("unit") or raw.get("Unit") or default_unit
@@ -113,6 +123,8 @@ class NormalizedMarketRecord:
         except (ValueError, TypeError):
             raise MarketDataError(f"Field '{field_name}' must be a numeric value, got: {val!r}")
         
+        if not math.isfinite(num):
+            raise MarketDataError(f"Invalid non-finite price for '{field_name}'.")
         if num < 0:
             raise MarketDataError(f"Invalid negative price for '{field_name}': {num}")
         return num
@@ -169,6 +181,8 @@ class LocalMarketDataProvider(BaseMarketProvider):
         self.records = []
         for raw in raw_list:
             record = NormalizedMarketRecord.validate_and_create(raw)
+            # Keep the provider provenance explicit even when sample records omit it.
+            record.raw_source = "local-fallback"
             self.records.append(record)
 
     def get_records(
@@ -259,6 +273,8 @@ class AgmarknetApiProvider(BaseMarketProvider):
                     raise MarketDataError(f"Unexpected API response type: {type(data)}")
                 if "records" not in data:
                     raise MarketDataError("Invalid API response: missing 'records' list.")
+                if not isinstance(data["records"], list):
+                    raise MarketDataError("Invalid API response: 'records' must be a list.")
                 return data["records"]
         except urllib.error.HTTPError as e:
             raise MarketDataError(f"Agmarknet API HTTP error {e.code}: {e.reason}")
@@ -301,6 +317,8 @@ class AgmarknetApiProvider(BaseMarketProvider):
             for raw in raw_records:
                 try:
                     rec = NormalizedMarketRecord.validate_and_create(raw)
+                    # Provider identity is authoritative; never trust response data to label itself.
+                    rec.raw_source = "data.gov.in (live)"
                     normalized_records.append(rec)
                 except MarketDataError:
                     # Skip individually malformed rows from live stream without failing entire batch

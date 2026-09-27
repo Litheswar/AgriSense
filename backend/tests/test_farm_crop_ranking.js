@@ -23,6 +23,7 @@ const http = require('http');
 const path = require('path');
 const mongoose = require('mongoose');
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
+process.env.JWT_SECRET ||= 'test-only-secret-generated-for-agrisense-m21';
 
 const app = require('../server');
 const farmService = require('../services/farmService');
@@ -30,6 +31,9 @@ const sharedFarmStateService = require('../services/sharedFarmStateService');
 const farmCropRankingService = require('../services/farmCropRankingService');
 const aiService = require('../services/aiService');
 const { connectDB, disconnectDB } = require('../config/db');
+const { createAuthFixture, injectFarmOwner } = require('./helpers/authFixture');
+let testToken;
+let cleanupAuthFixture;
 
 let passed = 0;
 let failed = 0;
@@ -53,6 +57,7 @@ function makeHttpRequest(server, method, reqPath, body = null) {
       method: method,
       headers: {
         'Content-Type': 'application/json',
+        ...(testToken ? { Authorization: `Bearer ${testToken}` } : {}),
         ...(bodyStr ? { 'Content-Length': Buffer.byteLength(bodyStr) } : {})
       }
     };
@@ -88,7 +93,11 @@ async function runTestSuite() {
   let testFarmIds = [];
 
   try {
-    await connectDB();
+    const connected = await connectDB();
+    if (!connected) throw new Error('Authenticated Farm regression requires Atlas.');
+    const authFixture = await createAuthFixture('crop-ranking');
+    testToken = authFixture.token;
+    cleanupAuthFixture = injectFarmOwner(farmService, authFixture.user._id);
     console.log(`[Database Connection] Status: ${mongoose.connection.readyState === 1 ? 'CONNECTED TO ATLAS' : 'IN-MEMORY STORE'}`);
 
     // Start Express HTTP server on ephemeral port for REST API tests
@@ -502,6 +511,7 @@ async function runTestSuite() {
         // Best effort cleanup
       }
     }
+    if (cleanupAuthFixture) await cleanupAuthFixture();
 
     if (server) {
       await new Promise((resolve) => server.close(resolve));

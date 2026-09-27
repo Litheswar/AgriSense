@@ -22,6 +22,7 @@ const http = require('http');
 const path = require('path');
 const mongoose = require('mongoose');
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
+process.env.JWT_SECRET ||= 'test-only-secret-generated-for-agrisense-m21';
 
 const app = require('../server');
 const farmService = require('../services/farmService');
@@ -29,6 +30,9 @@ const sharedFarmStateService = require('../services/sharedFarmStateService');
 const farmDiseaseRiskService = require('../services/farmDiseaseRiskService');
 const aiService = require('../services/aiService');
 const { connectDB, disconnectDB } = require('../config/db');
+const { createAuthFixture, injectFarmOwner } = require('./helpers/authFixture');
+let testToken;
+let cleanupAuthFixture;
 
 let passed = 0;
 let failed = 0;
@@ -52,6 +56,7 @@ function makeHttpRequest(server, method, reqPath, body = null) {
       method: method,
       headers: {
         'Content-Type': 'application/json',
+        ...(testToken ? { Authorization: `Bearer ${testToken}` } : {}),
         ...(bodyStr ? { 'Content-Length': Buffer.byteLength(bodyStr) } : {})
       }
     };
@@ -85,6 +90,10 @@ async function runSuite() {
 
   const isAtlasConnected = await connectDB();
   console.log(`[Database Connection] Status: ${isAtlasConnected ? 'CONNECTED TO ATLAS' : 'MEMORY FALLBACK ACTIVE'}`);
+  if (!isAtlasConnected) throw new Error('Authenticated Farm regression requires Atlas.');
+  const authFixture = await createAuthFixture('disease-risk');
+  testToken = authFixture.token;
+  cleanupAuthFixture = injectFarmOwner(farmService, authFixture.user._id);
 
   const server = http.createServer(app);
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -428,6 +437,7 @@ async function runSuite() {
     }
 
   } finally {
+    if (cleanupAuthFixture) await cleanupAuthFixture();
     server.close();
     await disconnectDB();
   }

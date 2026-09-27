@@ -26,6 +26,7 @@ const http = require('http');
 const path = require('path');
 const mongoose = require('mongoose');
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
+process.env.JWT_SECRET ||= 'test-only-secret-generated-for-agrisense-m21';
 
 const app = require('../server');
 const farmService = require('../services/farmService');
@@ -34,6 +35,9 @@ const farmFertilizerService = require('../services/farmFertilizerService');
 const farmDiseaseRiskService = require('../services/farmDiseaseRiskService');
 const aiService = require('../services/aiService');
 const { connectDB, disconnectDB } = require('../config/db');
+const { createAuthFixture, injectFarmOwner } = require('./helpers/authFixture');
+let testToken;
+let cleanupAuthFixture;
 
 let passed = 0;
 let failed = 0;
@@ -57,6 +61,7 @@ function makeHttpRequest(server, method, reqPath, body = null) {
       method: method,
       headers: {
         'Content-Type': 'application/json',
+        ...(testToken ? { Authorization: `Bearer ${testToken}` } : {}),
         ...(bodyStr ? { 'Content-Length': Buffer.byteLength(bodyStr) } : {})
       }
     };
@@ -95,7 +100,11 @@ async function runTestSuite() {
   const diseasedImagePath = path.resolve(__dirname, '../models/disease_detection/dataset/raw/Tomato___Late_blight/0003faa8-4b27-4c65-bf42-6d9e352ca1a5___RS_Late.B 4946.JPG');
 
   try {
-    await connectDB();
+    const connected = await connectDB();
+    if (!connected) throw new Error('Authenticated Farm regression requires Atlas.');
+    const authFixture = await createAuthFixture('disease-detection');
+    testToken = authFixture.token;
+    cleanupAuthFixture = injectFarmOwner(farmService, authFixture.user._id);
     const isAtlasConnected = mongoose.connection.readyState === 1;
     console.log(`[Database Connection] Status: ${isAtlasConnected ? 'CONNECTED TO ATLAS' : 'IN-MEMORY STORE'}`);
 
@@ -514,6 +523,7 @@ async function runTestSuite() {
         // Best effort cleanup
       }
     }
+    if (cleanupAuthFixture) await cleanupAuthFixture();
 
     if (server) {
       await new Promise((resolve) => server.close(resolve));

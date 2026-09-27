@@ -128,8 +128,12 @@ exports.handleDiseaseDetection = async (req, res) => {
         err.code = 'INVALID_FARM_ID';
         throw err;
       }
-      // Check farm existence (throws FARM_NOT_FOUND if not found)
-      await farmService.getFarmById(farmId);
+      // The route middleware has already authenticated the caller and loaded this owned Farm.
+      if (!req.farm || req.farm._id.toString() !== farmId.toString()) {
+        const err = new Error('Farm not found.');
+        err.code = 'FARM_NOT_FOUND';
+        throw err;
+      }
     }
 
     // 1. Execute Disease Detection inference
@@ -154,7 +158,7 @@ exports.handleDiseaseDetection = async (req, res) => {
         disease,
         confidence
       }
-    });
+    }, req.farm);
 
     // 5. Return disease detection result with updated farm metadata
     return res.status(200).json({

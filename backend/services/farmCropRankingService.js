@@ -142,6 +142,7 @@ class FarmCropRankingService {
     const rankingPayload = {
       crop_recommendation_output: cropRecommendationOutput,
       market_context: effectiveMarketContext,
+      ...(options.precomputedMarketResults ? { precomputed_market_results: options.precomputedMarketResults } : {}),
       ...(options.custom_weights ? { custom_weights: options.custom_weights } : {})
     };
 

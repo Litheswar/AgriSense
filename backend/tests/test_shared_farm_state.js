@@ -15,11 +15,18 @@ const http = require('http');
 const path = require('path');
 const mongoose = require('mongoose');
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
+process.env.JWT_SECRET ||= 'test-only-secret-generated-for-agrisense-m21';
 
 const app = require('../server');
 const farmService = require('../services/farmService');
 const sharedFarmStateService = require('../services/sharedFarmStateService');
 const { connectDB, disconnectDB } = require('../config/db');
+const User = require('../db/models/User');
+const { issueToken } = require('../services/authTokenService');
+let testUser;
+let testToken;
+
+function createOwnedFarm(payload) { return farmService.createFarm({ ...payload, ownerId: testUser._id }); }
 
 let passed = 0;
 let failed = 0;
@@ -43,6 +50,7 @@ function makeHttpRequest(server, method, reqPath, body = null) {
       method: method,
       headers: {
         'Content-Type': 'application/json',
+        ...(testToken ? { Authorization: `Bearer ${testToken}` } : {}),
         ...(bodyStr ? { 'Content-Length': Buffer.byteLength(bodyStr) } : {})
       }
     };
@@ -77,6 +85,9 @@ async function runSharedFarmStateSuite() {
   // Connect to DB (Atlas if available, or memory store fallback)
   const isAtlasConnected = await connectDB();
   console.log(`[Database Connection] Status: ${isAtlasConnected ? 'CONNECTED TO ATLAS' : 'MEMORY FALLBACK ACTIVE'}`);
+  if (!isAtlasConnected) throw new Error('Authenticated Farm regression requires Atlas.');
+  testUser = await User.create({ name: 'Shared State Test User', email: `shared-state-${Date.now()}@example.test`, passwordHash: 'test-only-not-used' });
+  testToken = issueToken(testUser._id);
 
   const server = http.createServer(app);
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -127,7 +138,7 @@ async function runSharedFarmStateSuite() {
         }
       };
 
-      createdFarm = await farmService.createFarm(samplePayload);
+      createdFarm = await createOwnedFarm(samplePayload);
       const farmId = createdFarm._id.toString();
 
       const sharedState = await sharedFarmStateService.getSharedFarmState(farmId);
@@ -270,7 +281,7 @@ async function runSharedFarmStateSuite() {
           crop: { name: 'Grapes', growthStage: 'fruiting' }
         };
 
-        const atlasFarm = await farmService.createFarm(atlasFarmData);
+        const atlasFarm = await createOwnedFarm(atlasFarmData);
         const atlasFarmId = atlasFarm._id.toString();
 
         // Verify retrieval directly via SharedFarmStateService over live Atlas connection
@@ -304,6 +315,8 @@ async function runSharedFarmStateSuite() {
     }
 
   } finally {
+    if (testUser) await require('../db/models/Farm').deleteMany({ ownerId: testUser._id });
+    if (testUser) await User.deleteOne({ _id: testUser._id });
     server.close();
     await disconnectDB();
   }

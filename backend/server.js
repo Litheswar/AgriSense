@@ -6,6 +6,7 @@ const express = require('express');
 const cors = require('cors');
 const aiRoutes = require('./routes/aiRoutes');
 const farmRoutes = require('./routes/farmRoutes');
+const authRoutes = require('./routes/authRoutes');
 const config = require('./config/aiConfig');
 const { connectDB, getDetailedStatus } = require('./config/db');
 const farmService = require('./services/farmService');
@@ -37,6 +38,7 @@ app.get('/', (req, res) => {
 
 // Mount routes
 app.use('/api/ai', aiRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/farms', farmRoutes);
 
 // 404 handler
@@ -52,12 +54,14 @@ app.use((req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error('[AgriSense Server Error]', err);
-  res.status(500).json({
+  // Error objects from JSON parsers can retain the raw request body (including passwords).
+  console.error('[AgriSense Server Error]', err && (err.code || err.name) || 'unknown error');
+  const status = Number.isInteger(err.status) && err.status >= 400 && err.status < 500 ? err.status : 500;
+  res.status(status).json({
     success: false,
     error: {
-      code: 'INTERNAL_SERVER_ERROR',
-      message: err.message || 'An unexpected server error occurred.'
+      code: status === 400 ? 'INVALID_JSON' : 'INTERNAL_SERVER_ERROR',
+      message: status === 400 ? 'Request body contains invalid JSON.' : 'An unexpected server error occurred.'
     }
   });
 });

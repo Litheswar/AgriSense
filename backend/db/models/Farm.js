@@ -169,6 +169,12 @@ const MarketContextSchema = new Schema({
 }, { _id: false });
 
 const FarmSchema = new Schema({
+  ownerId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'Farm owner is required'],
+    index: true
+  },
   name: {
     type: String,
     required: [true, 'Farm name is required'],
