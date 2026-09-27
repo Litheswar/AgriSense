@@ -26,22 +26,30 @@ function sendError(res, err, defaultStatus = 400) {
     code === 'DiseaseInferenceError'
   ) {
     status = 400;
-  } else if (code === 'INTERNAL_ERROR' || code === 'TIMEOUT') {
+  } else if (code === 'TIMEOUT' || code === 'PROVIDER_UNAVAILABLE' || code === 'AI_SERVER_UNAVAILABLE') {
+    status = 503;
+  } else if (code === 'INTERNAL_ERROR' || code === 'AI_SERVICE_ERROR') {
     status = 500;
   }
 
-  if (err && err.error && err.error.code) {
-    return res.status(status).json(err);
-  }
-
-  const message = err.message || (typeof err === 'string' ? err : 'An unexpected error occurred in AI service.');
+  const safeMessages = {
+    FARM_NOT_FOUND: 'Farm not found.',
+    INVALID_FARM_ID: 'Invalid farm ID.',
+    VALIDATION_ERROR: 'Request data is invalid.',
+    INVALID_INPUT: 'Request data is invalid.',
+    MISSING_IMAGE_PATH: "Request body must include 'image_path' string.",
+    MISSING_TASK: "Request body must include 'task' field.",
+    PROHIBITED_OPERATOR: 'Request data contains an unsupported operator.',
+    TIMEOUT: 'The AI service timed out.',
+    PROVIDER_UNAVAILABLE: 'The AI provider is temporarily unavailable.',
+    AI_SERVER_UNAVAILABLE: 'The AI service is temporarily unavailable.'
+  };
 
   return res.status(status).json({
     success: false,
     error: {
       code,
-      message,
-      ...(err.details ? { details: err.details } : {})
+      message: safeMessages[code] || 'An unexpected error occurred in AI service.'
     }
   });
 }

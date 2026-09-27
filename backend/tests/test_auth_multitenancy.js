@@ -53,6 +53,15 @@ async function main() {
     await new Promise(resolve => server.once('listening', resolve));
     const base = `http://127.0.0.1:${server.address().port}`;
     const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const deniedOrigin = await fetch(`${base}/api/auth/me`, { headers: { origin: 'https://untrusted.example' } });
+    assert.equal(deniedOrigin.status, 403, 'unconfigured browser origins must be denied');
+    assert.equal((await deniedOrigin.json()).error.code, 'CORS_ORIGIN_DENIED');
+    const largeBody = await fetch(`${base}/api/auth/login`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email: 'x@example.test', password: 'x'.repeat(110_000) })
+    });
+    assert.equal(largeBody.status, 413, 'JSON request body limit must be enforced');
+    assert.equal((await largeBody.json()).error.code, 'PAYLOAD_TOO_LARGE');
     const registerA = await request(base, 'POST', '/api/auth/register', { name: 'M21 Test A', email: `m21-a-${suffix}@example.test`, password: 'test-password-21' });
     assert.equal(registerA.status, 201);
     assert.deepEqual(Object.keys(registerA.body.user).sort(), ['email', 'id', 'name']);
@@ -99,6 +108,9 @@ async function main() {
     assert.equal((await request(base, 'PUT', `/api/farms/${farmAId}`, { name: 'M21 Put Farm A' }, registerA.body.token)).status, 200);
     assert.equal((await request(base, 'GET', `/api/farms/${farmAId}/shared-state`, undefined, registerA.body.token)).status, 200);
     assert.equal((await request(base, 'GET', `/api/farms/${farmAId}/weather`, undefined, registerA.body.token)).status, 200);
+    const invalidWeights = await request(base, 'GET', `/api/farms/${farmAId}/crop-ranking?agronomic_weight=Infinity&market_weight=0`, undefined, registerA.body.token);
+    assert.equal(invalidWeights.status, 400, 'non-finite crop-ranking weights must be rejected');
+    assert.equal(invalidWeights.body.error.code, 'INVALID_INPUT');
     for (const [service, method] of originalFarmServiceMethods) {
       service[method] = async (...args) => ({ success: true, farmId: String(args[0]), sharedFarmState: args[1] || null });
     }

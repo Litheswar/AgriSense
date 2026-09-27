@@ -40,15 +40,29 @@ function sendError(res, err) {
     code === 'INVALID_LONGITUDE'
   ) {
     status = 400;
+  } else if (code.includes('PROVIDER_UNAVAILABLE') || code.includes('PROVIDER_TIMEOUT') || code === 'TIMEOUT') {
+    status = 503;
+  } else if (code === 'CONFLICT') {
+    status = 409;
   }
+
+  const safeMessages = {
+    FARM_NOT_FOUND: 'Farm not found.',
+    INVALID_FARM_ID: 'Invalid farm ID.',
+    VALIDATION_ERROR: 'Request data is invalid.',
+    INVALID_INPUT: 'Request data is invalid.',
+    INSUFFICIENT_FARM_DATA: 'Farm data is insufficient for this recommendation.',
+    WEATHER_PROVIDER_UNAVAILABLE: 'Weather provider is temporarily unavailable.',
+    WEATHER_PROVIDER_TIMEOUT: 'Weather provider timed out.',
+    CONFLICT: 'The request conflicts with the current resource state.'
+  };
 
   return res.status(status).json({
     success: false,
     error: {
       code,
-      message: err.message || (err.error && err.error.message) || 'An unexpected error occurred.',
-      ...(err.details ? { details: err.details } : {}),
-      ...(err.missingFields ? { missingFields: err.missingFields } : {})
+      message: safeMessages[code] || (status === 400 ? 'Request data is invalid.' : 'An unexpected error occurred.'),
+      ...(code === 'INSUFFICIENT_FARM_DATA' && Array.isArray(err.missingFields) ? { missingFields: err.missingFields } : {})
     }
   });
 }
@@ -194,10 +208,32 @@ exports.getCropRanking = async (req, res) => {
     const options = {};
     options.sharedFarmState = req.farm.toSharedFarmState();
     if (req.query.agronomic_weight !== undefined || req.query.market_weight !== undefined) {
-      options.custom_weights = {
-        agronomic: req.query.agronomic_weight !== undefined ? parseFloat(req.query.agronomic_weight) : 0.7,
-        market: req.query.market_weight !== undefined ? parseFloat(req.query.market_weight) : 0.3
+      const parseWeight = (key, fallback) => {
+        const raw = req.query[key];
+        if (raw === undefined) return fallback;
+        if (typeof raw !== 'string' || raw.trim() === '') return NaN;
+        return Number(raw);
       };
+      const agronomic = parseWeight('agronomic_weight', 0.7);
+      const market = parseWeight('market_weight', 0.3);
+      if (!Number.isFinite(agronomic) || !Number.isFinite(market)
+        || agronomic < 0 || market < 0 || agronomic > 1 || market > 1
+        || Math.abs(agronomic + market - 1) > 1e-9) {
+        const err = new Error('Crop ranking weights must be finite values between 0 and 1 and sum to 1.');
+        err.code = 'INVALID_INPUT';
+        throw err;
+      }
+      options.custom_weights = {
+        agronomic,
+        market
+      };
+    }
+    for (const key of ['market', 'state', 'district']) {
+      if (req.query[key] !== undefined && (typeof req.query[key] !== 'string' || req.query[key].length > 120)) {
+        const err = new Error(`${key} must be a string of at most 120 characters.`);
+        err.code = 'INVALID_INPUT';
+        throw err;
+      }
     }
     if (req.query.market || req.query.state || req.query.district) {
       options.market_context = {
