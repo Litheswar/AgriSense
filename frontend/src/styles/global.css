@@ -319,6 +319,67 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .farm-detail strong { overflow-wrap: anywhere; color: #425545; font-size: 12px; font-weight: 650; }
 .farm-detail-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .farm-detail-columns .farm-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.irrigation-page { width: 100%; max-width: 1080px; margin: 0 auto; }
+.irrigation-farm-panel, .irrigation-factors-panel { padding: 21px; border: 1px solid #e5e9dd; border-radius: 16px; background: #fffefa; box-shadow: 0 5px 18px #26392e08; }
+.irrigation-panel-heading { display: flex; align-items: center; gap: 12px; }
+.irrigation-section-icon { display: grid; width: 38px; height: 38px; flex: 0 0 38px; place-items: center; border-radius: 12px; color: #507249; background: #edf2e3; }
+.irrigation-panel-heading h2 { margin: 4px 0 0; color: #304234; font-family: var(--serif); font-size: 22px; font-weight: 500; }
+.irrigation-farm-status { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; padding: 6px 9px; border-radius: 999px; color: #587546; background: #eff4e5; font-size: 8px; font-weight: 780; letter-spacing: .8px; }
+.irrigation-farm-location { display: flex; align-items: center; gap: 6px; margin: 10px 0 18px 50px; color: #7d8a7d; font-size: 11px; }
+.irrigation-farm-location svg { color: #819375; }
+.irrigation-recorded-label { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; color: #8b9688; font-size: 8px; }
+.irrigation-recorded-label span:first-child { color: #687965; font-weight: 780; letter-spacing: 1.05px; }
+.irrigation-farm-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.irrigation-farm-metric { display: flex; min-width: 0; min-height: 59px; flex-direction: column; justify-content: space-between; gap: 8px; padding: 10px 11px; border: 1px solid #eef0e8; border-radius: 10px; background: #fafbf6; }
+.irrigation-farm-metric > span { display: flex; align-items: center; gap: 6px; color: #859083; font-size: 9px; }
+.irrigation-farm-metric > span svg { flex: 0 0 auto; color: #78916e; }
+.irrigation-farm-metric > strong { overflow-wrap: anywhere; color: #394e3d; font-size: 13px; font-weight: 700; }
+.irrigation-farm-note { display: flex; align-items: center; gap: 6px; margin: 10px 0 0; color: #8a6542; font-size: 9px; }
+.irrigation-farm-note svg { flex: 0 0 auto; color: #a47e4f; }
+.irrigation-action-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 18px 0; }
+.irrigation-action-row .button { min-width: 245px; }
+.irrigation-action-row > span { color: #8b9689; font-size: 10px; }
+.irrigation-loading-panel { margin: 0 0 17px; padding: 9px 17px 13px; border: 1px solid #e5e9dd; border-radius: 13px; background: #fbfcf7; }
+.irrigation-loading-panel .loading-state { min-height: 58px; color: #527047; }
+.irrigation-loading-panel > p { margin: 0; color: #8a9588; font-size: 10px; text-align: center; }
+.irrigation-error-panel { margin-bottom: 17px; }
+.irrigation-missing-panel { display: flex; gap: 13px; margin-bottom: 17px; padding: 17px; border: 1px solid #ead9c8; border-radius: 13px; background: #fffaf3; }
+.irrigation-message-icon { display: grid; width: 37px; height: 37px; flex: 0 0 37px; place-items: center; border-radius: 11px; color: #8a7447; background: #f5eedf; }
+.irrigation-message-content h2 { margin: 1px 0 5px; color: #5d4c32; font-family: var(--serif); font-size: 20px; font-weight: 500; }
+.irrigation-message-content p { margin: 0; color: #887d68; font-size: 11px; line-height: 1.6; }
+.irrigation-message-content ul { display: flex; flex-wrap: wrap; gap: 7px 20px; margin: 10px 0 14px; padding-left: 18px; color: #65583f; font-size: 11px; }
+.irrigation-message-content .button { min-height: 36px; font-size: 11px; }
+.irrigation-result-stack { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); align-items: stretch; gap: 13px; }
+.irrigation-decision { position: relative; display: flex; min-height: 280px; flex-direction: column; overflow: hidden; padding: 22px; border-radius: 16px; color: #f5f5e9; background: linear-gradient(118deg, #204c33 0%, #315f3d 61%, #507345 100%); box-shadow: 0 12px 27px #204b321c; }
+.irrigation-decision--not-required { background: linear-gradient(118deg, #344b3d, #526345); }
+.irrigation-decision::after { position: absolute; right: -35px; bottom: -95px; width: 250px; height: 250px; border: 1px solid #e0e9b62a; border-radius: 50%; box-shadow: 0 0 0 23px #e0e9b611, 0 0 0 48px #e0e9b60a; content: ""; pointer-events: none; }
+.irrigation-decision__top, .irrigation-decision__kicker, .irrigation-decision h2, .irrigation-decision__reason, .irrigation-result-farm { position: relative; z-index: 1; }
+.irrigation-decision__top { display: flex; align-items: center; gap: 9px; }
+.irrigation-decision__top .irrigation-section-icon { color: #e0e8ae; background: #eff3ce18; }
+.irrigation-decision__top .eyebrow { color: #c1d0b1; }
+.irrigation-urgency { margin-left: auto; padding: 6px 9px; border: 1px solid #ffffff33; border-radius: 99px; color: #f5f5e9; font-size: 9px; font-weight: 700; white-space: nowrap; }
+.irrigation-urgency--high { color: #fff1e8; background: #a34a343d; }
+.irrigation-urgency--medium { color: #fff5db; background: #aa83333d; }
+.irrigation-urgency--low, .irrigation-urgency--none { color: #e7f0da; background: #9ab8792b; }
+.irrigation-decision__kicker { margin-top: 28px; color: #bed0b1; font-size: 8px; font-weight: 780; letter-spacing: 1.5px; }
+.irrigation-decision h2 { margin: 6px 0 8px; color: #fffef1; font-family: var(--serif); font-size: clamp(27px, 3vw, 36px); font-weight: 500; }
+.irrigation-decision__reason { margin: 0 0 18px; color: #e4ead9; font-size: 11px; line-height: 1.6; }
+.irrigation-result-farm { display: flex; flex-direction: column; gap: 4px; margin-top: auto; padding-top: 11px; border-top: 1px solid #e1ebd13a; }
+.irrigation-result-farm span { color: #c1d0b1; font-size: 8px; font-weight: 740; letter-spacing: .9px; }
+.irrigation-result-farm strong { overflow-wrap: anywhere; color: #f7f6e6; font-size: 14px; font-weight: 650; }
+.irrigation-result-farm small { overflow-wrap: anywhere; color: #c1d0b1; font-size: 8px; }
+.irrigation-factors-panel { display: flex; flex-direction: column; }
+.irrigation-factors-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; padding-bottom: 13px; border-bottom: 1px solid #edf0e7; }
+.irrigation-factors-heading h2 { margin: 5px 0 0; color: #344838; font-family: var(--serif); font-size: 21px; font-weight: 500; }
+.irrigation-factors-heading > span { color: #919b8f; font-size: 8px; text-align: right; }
+.irrigation-factors-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-top: 16px; }
+.irrigation-factor { display: flex; min-height: 64px; flex-direction: column; justify-content: center; gap: 6px; padding: 11px; border: 1px solid #eef0e8; border-radius: 10px; background: #fafbf6; }
+.irrigation-factor > span { color: #859083; font-size: 9px; }
+.irrigation-factor > strong { overflow-wrap: anywhere; color: #435747; font-size: 12px; font-weight: 700; }
+.irrigation-engine-note { display: flex; grid-column: 1 / -1; gap: 10px; padding: 13px 15px; border: 1px solid #eadfc7; border-radius: 11px; background: #fffaf0; }
+.irrigation-engine-note__icon { color: #9a7947; }
+.irrigation-engine-note strong { color: #745f3d; font-size: 10px; }
+.irrigation-engine-note p { margin: 4px 0 0; color: #887c65; font-size: 9px; line-height: 1.55; }
 .crop-recommendation-page { width: 100%; max-width: 1120px; margin: 0 auto; }
 .crop-farm-panel, .crop-candidates-panel { padding: 21px; border: 1px solid #e5e9dd; border-radius: 16px; background: #fffefa; box-shadow: 0 5px 18px #26392e08; }
 .crop-panel-heading { display: flex; align-items: center; gap: 12px; }
@@ -402,6 +463,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .insight-card { padding: 12px; }
   .farms-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .crop-result-stack { grid-template-columns: 1fr 1fr; }
+  .irrigation-result-stack { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 860px) {
@@ -418,6 +480,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .page-content { min-height: calc(100vh - 62px); padding: 27px 24px 24px; }
   .dashboard-columns { grid-template-columns: minmax(0, 1.35fr) minmax(230px, .8fr); }
   .crop-result-stack { grid-template-columns: 1fr; }
+  .irrigation-farm-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .irrigation-action-row { align-items: stretch; flex-direction: column; }
+  .irrigation-action-row .button { width: 100%; }
+  .irrigation-action-row > span { text-align: center; }
+  .irrigation-result-stack { grid-template-columns: 1fr; }
+  .irrigation-decision { min-height: 250px; }
 }
 
 @media (max-width: 660px) {
@@ -492,6 +560,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 @media (max-width: 390px) {
   .crop-farm-panel, .crop-candidates-panel { padding: 13px; }
+  .irrigation-farm-panel, .irrigation-factors-panel { padding: 13px; }
+  .irrigation-panel-heading { gap: 8px; }
+  .irrigation-panel-heading h2 { font-size: 19px; }
+  .irrigation-section-icon { width: 33px; height: 33px; flex-basis: 33px; }
+  .irrigation-farm-location { margin-left: 41px; }
+  .irrigation-farm-metric { padding: 8px; }
+  .irrigation-farm-metric > span { font-size: 8px; }
+  .irrigation-decision { padding: 17px; }
+  .irrigation-decision__top { flex-wrap: wrap; }
+  .irrigation-urgency { font-size: 8px; }
+  .irrigation-factors-heading { align-items: flex-start; flex-direction: column; }
+  .irrigation-factors-heading > span { text-align: left; }
+  .irrigation-missing-panel { gap: 9px; padding: 13px; }
   .crop-panel-heading { gap: 8px; }
   .crop-panel-heading h2 { font-size: 19px; }
   .crop-section-icon { width: 33px; height: 33px; flex-basis: 33px; }
