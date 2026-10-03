@@ -24,7 +24,7 @@ AgriSense is an AI-powered agricultural decision support platform that integrate
 
 ```
 ┌──────────────────┐
-│   React Frontend │  (Planned)
+│   React Frontend │  (M24.1 foundation)
 └────────┬─────────┘
          │
 ┌────────▼─────────┐
@@ -111,6 +111,17 @@ python backend/ai/ai_server.py
 ```
 
 The AI server starts at `http://127.0.0.1:5001` by default.
+
+### 6. Start the Frontend
+
+```bash
+cd frontend
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+The Vite development server starts at `http://localhost:5173`. Set `VITE_API_BASE_URL` in `frontend/.env.local` only if the backend API is hosted at a different URL. The backend's `FRONTEND_ORIGIN` must include the frontend origin when it differs from the default.
 
 ---
 
@@ -203,6 +214,13 @@ AgriSense/
 ├── README.md
 ├── .gitignore
 ├── .gitattributes
+├── frontend/                       # React + Vite application shell
+│   ├── src/
+│   │   ├── api/                    # Centralized REST clients
+│   │   ├── components/             # Layout, navigation, farm, and UI components
+│   │   ├── context/                # Authentication and selected-farm state
+│   │   └── pages/                  # Dashboard, auth, farms, and placeholders
+│   └── package.json
 └── backend/
     ├── server.js                    # Express entry point
     ├── package.json
@@ -252,7 +270,7 @@ Detailed project documentation is available in `backend/reference/`:
 ## Current Status
 
 - **Milestone 18A** — MongoDB Atlas Connectivity & Persistence: ✅ **Implemented and Verified**
-- **Frontend Integration** — `[PLANNED]`
+- **Frontend Foundation (Milestone 24.1)** — ✅ **Implemented and Build Verified**
 - **Weather API Integration** — `[NOT LIVE VERIFIED]`
 - **Farm → AI Pipeline Automation** — `[PLANNED]`
 
