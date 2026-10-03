@@ -18,6 +18,30 @@ export function visibleDiseaseRiskResult(result, selectedFarmId) {
   return result?.farmId === selectedFarmId ? result : null;
 }
 
+export function diseaseRiskAssessmentPresentation(result) {
+  const recommendation = result?.recommendation && typeof result.recommendation === 'object' ? result.recommendation : {};
+  const engineInput = result?.engineInput && typeof result.engineInput === 'object' ? result.engineInput : {};
+  const environmentalConditions = Object.fromEntries(
+    ['temperature', 'humidity', 'rainfall', 'recent_rainfall']
+      .filter((key) => engineInput[key] !== null && engineInput[key] !== undefined && engineInput[key] !== '')
+      .map((key) => [key, engineInput[key]])
+  );
+  const signals = recommendation.signals && typeof recommendation.signals === 'object' && !Array.isArray(recommendation.signals) ? recommendation.signals : {};
+  const reasoning = Array.isArray(recommendation.reasoning) ? recommendation.reasoning.filter((item) => typeof item === 'string') : [];
+  return {
+    riskLevel: typeof recommendation.risk_level === 'string' ? recommendation.risk_level : null,
+    riskScore: typeof recommendation.risk_score === 'number' && Number.isFinite(recommendation.risk_score) ? recommendation.risk_score : null,
+    riskScoreNote: typeof recommendation.risk_score_note === 'string' ? recommendation.risk_score_note : null,
+    crop: typeof engineInput.crop === 'string' ? engineInput.crop : null,
+    growthStage: typeof engineInput.growth_stage === 'string' ? engineInput.growth_stage : null,
+    environmentalConditions,
+    signals,
+    reasoning,
+    guidance: typeof recommendation.recommendation === 'string' ? recommendation.recommendation : null,
+    disclaimer: typeof recommendation.disclaimer === 'string' ? recommendation.disclaimer : null
+  };
+}
+
 export function missingDiseaseRiskFields(error) {
   const fields = error?.payload?.error?.missingFields;
   return Array.isArray(fields) ? fields : [];

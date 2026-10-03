@@ -6,7 +6,7 @@ import { useFarms } from '../context/FarmContext.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { EmptyState, ErrorState, LoadingState } from '../components/ui/Feedback.jsx';
 import { PageHeader } from '../components/ui/PageHeader.jsx';
-import { createDiseaseRiskRequestTracker, diseaseRiskErrorMessage, diseaseRiskPageMode, labelDiseaseRiskField, missingDiseaseRiskFields, visibleDiseaseRiskResult } from '../lib/diseaseRiskPresentation.js';
+import { createDiseaseRiskRequestTracker, diseaseRiskAssessmentPresentation, diseaseRiskErrorMessage, diseaseRiskPageMode, labelDiseaseRiskField, missingDiseaseRiskFields, visibleDiseaseRiskResult } from '../lib/diseaseRiskPresentation.js';
 
 function recorded(value, suffix = '') {
   if (value === null || value === undefined || value === '') return 'Not returned';
@@ -14,28 +14,29 @@ function recorded(value, suffix = '') {
 }
 
 function RiskAssessment({ result, farmName }) {
-  const recommendation = result?.recommendation || {};
-  const riskLevel = typeof recommendation.risk_level === 'string' ? recommendation.risk_level : '';
+  const assessment = diseaseRiskAssessmentPresentation(result);
+  const riskLevel = assessment.riskLevel || '';
   const riskTone = ['low', 'medium', 'high'].includes(riskLevel.toLowerCase()) ? riskLevel.toLowerCase() : 'unknown';
-  const signals = recommendation.signals && typeof recommendation.signals === 'object' ? recommendation.signals : {};
-  const reasoning = Array.isArray(recommendation.reasoning) ? recommendation.reasoning : [];
+  const signals = assessment.signals;
+  const reasoning = assessment.reasoning;
   const signalLabels = { humidity: 'Humidity', temperature: 'Temperature', rainfall: 'Rainfall', recent_rainfall: 'Recent rainfall' };
 
   return <div className="disease-risk-results" aria-live="polite">
     <section className="disease-risk-summary" aria-labelledby="disease-risk-summary-heading">
       <div className="disease-risk-summary__top"><span className="disease-risk-icon"><Activity size={19} aria-hidden="true" /></span><div><span className="eyebrow">BACKEND ENVIRONMENTAL ASSESSMENT</span><h2 id="disease-risk-summary-heading">Disease risk for {result.farmName || farmName || 'selected Farm'}</h2></div><span className={`disease-risk-badge disease-risk-badge--${riskTone}`}><span aria-hidden="true">{riskTone === 'low' ? <ShieldCheck size={14} /> : riskTone === 'high' ? <ShieldAlert size={14} /> : <Activity size={14} />}</span>{riskLevel || 'Not returned'}</span></div>
-      <div className="disease-risk-score"><span>Prototype composite index</span><strong>{recorded(recommendation.risk_score)}</strong><p>{recommendation.risk_score_note || 'The backend did not return an explanation for this score.'}</p></div>
+      <div className="disease-risk-score"><span>Prototype composite index</span><strong>{recorded(assessment.riskScore)}</strong><p>{assessment.riskScoreNote || 'The backend did not return an explanation for this score.'}</p></div>
     </section>
 
     <section className="disease-risk-panel" aria-labelledby="disease-risk-inputs-heading"><div className="disease-risk-panel__heading"><div><span className="eyebrow">ENGINE INPUTS</span><h2 id="disease-risk-inputs-heading">Conditions used for this assessment</h2></div><span>Returned with this response</span></div><dl className="disease-risk-metrics">
-      <div><dt>Crop</dt><dd>{recorded(result.engineInput?.crop)}</dd></div><div><dt>Growth stage</dt><dd>{recorded(result.engineInput?.growth_stage)}</dd></div><div><dt>Temperature</dt><dd>{recorded(result.engineInput?.temperature, ' °C')}</dd></div><div><dt>Humidity</dt><dd>{recorded(result.engineInput?.humidity, '%')}</dd></div><div><dt>Rainfall</dt><dd>{recorded(result.engineInput?.rainfall, ' mm')}</dd></div><div><dt>Recent rainfall</dt><dd>{recorded(result.engineInput?.recent_rainfall, ' mm')}</dd></div>
+      <div><dt>Crop</dt><dd>{recorded(assessment.crop)}</dd></div><div><dt>Growth stage</dt><dd>{recorded(assessment.growthStage)}</dd></div><div><dt>Temperature</dt><dd>{recorded(assessment.environmentalConditions.temperature, ' °C')}</dd></div><div><dt>Humidity</dt><dd>{recorded(assessment.environmentalConditions.humidity, '%')}</dd></div><div><dt>Rainfall</dt><dd>{recorded(assessment.environmentalConditions.rainfall, ' mm')}</dd></div><div><dt>Recent rainfall</dt><dd>{recorded(assessment.environmentalConditions.recent_rainfall, ' mm')}</dd></div>
     </dl></section>
 
     <section className="disease-risk-panel" aria-labelledby="disease-risk-signals-heading"><div className="disease-risk-panel__heading"><div><span className="eyebrow">MODEL SIGNALS</span><h2 id="disease-risk-signals-heading">Signal contributions</h2></div><span>Values supplied by the disease-risk engine</span></div><dl className="disease-risk-signals">{Object.entries(signals).length ? Object.entries(signals).map(([key, value]) => <div key={key}><dt>{signalLabels[key] || key}</dt><dd>{recorded(value)}</dd></div>) : <p>No signal values were returned.</p>}</dl></section>
 
-    <section className="disease-risk-panel" aria-labelledby="disease-risk-reasoning-heading"><div className="disease-risk-panel__heading"><div><span className="eyebrow">DECISION CONTEXT</span><h2 id="disease-risk-reasoning-heading">Why this risk was returned</h2></div><span>Reasoning supplied by the engine</span></div>{reasoning.length ? <ul className="disease-risk-reasoning">{reasoning.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul> : <p className="disease-risk-empty-copy">No reasoning details were returned.</p>}</section>
+      <section className="disease-risk-panel" aria-labelledby="disease-risk-reasoning-heading"><div className="disease-risk-panel__heading"><div><span className="eyebrow">DECISION CONTEXT</span><h2 id="disease-risk-reasoning-heading">Why this risk was returned</h2></div><span>Reasoning supplied by the engine</span></div>{reasoning.length ? <ul className="disease-risk-reasoning">{reasoning.map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul> : <p className="disease-risk-empty-copy">No reasoning details were returned.</p>}</section>
 
-    {recommendation.disclaimer && <aside className="disease-risk-disclaimer"><AlertTriangle size={18} aria-hidden="true" /><p>{recommendation.disclaimer}</p></aside>}
+    {assessment.guidance && <section className="disease-risk-panel" aria-labelledby="disease-risk-guidance-heading"><div className="disease-risk-panel__heading"><div><span className="eyebrow">BACKEND GUIDANCE</span><h2 id="disease-risk-guidance-heading">Recommendation</h2></div></div><p className="disease-risk-empty-copy">{assessment.guidance}</p></section>}
+    {assessment.disclaimer && <aside className="disease-risk-disclaimer"><AlertTriangle size={18} aria-hidden="true" /><p>{assessment.disclaimer}</p></aside>}
   </div>;
 }
 

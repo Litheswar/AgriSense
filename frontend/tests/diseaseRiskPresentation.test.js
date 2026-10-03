@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   createDiseaseRiskRequestTracker,
+  diseaseRiskAssessmentPresentation,
   diseaseRiskErrorMessage,
   diseaseRiskPageMode,
   labelDiseaseRiskField,
@@ -22,6 +23,40 @@ test('assessment visibility is scoped to its Farm and leaves returned engine dat
   assert.equal(visibleDiseaseRiskResult(response, 'farm-b'), null);
   assert.equal(visibleDiseaseRiskResult(response, 'farm-a'), response);
   assert.deepEqual(visibleDiseaseRiskResult(response, 'farm-a').recommendation, response.recommendation);
+});
+
+test('assessment presentation exposes only backend risk, conditions, signals, reasoning, and optional guidance', () => {
+  const response = {
+    farmId: 'farm-a',
+    engineInput: { crop: 'Tomato', growth_stage: 'flowering', temperature: 24, humidity: 88, rainfall: 2, recent_rainfall: 12 },
+    recommendation: {
+      risk_level: 'High', risk_score: 0.75, risk_score_note: 'Prototype composite index; not a calibrated probability.',
+      signals: { humidity: 0.3, temperature: 0.2 },
+      reasoning: ['Humidity contributes an elevated signal.'],
+      recommendation: 'Monitor conditions.',
+      disclaimer: 'Risk does not confirm disease.'
+    }
+  };
+  assert.deepEqual(diseaseRiskAssessmentPresentation(response), {
+    riskLevel: 'High', riskScore: 0.75, riskScoreNote: 'Prototype composite index; not a calibrated probability.',
+    crop: 'Tomato', growthStage: 'flowering',
+    environmentalConditions: { temperature: 24, humidity: 88, rainfall: 2, recent_rainfall: 12 },
+    signals: { humidity: 0.3, temperature: 0.2 }, reasoning: ['Humidity contributes an elevated signal.'],
+    guidance: 'Monitor conditions.', disclaimer: 'Risk does not confirm disease.'
+  });
+});
+
+test('assessment presentation does not invent missing risk scores, weather, signals, or recommendations', () => {
+  const presentation = diseaseRiskAssessmentPresentation({
+    engineInput: { temperature: null, humidity: 0 },
+    recommendation: { risk_level: 'Low', reasoning: [] }
+  });
+  assert.equal(presentation.riskLevel, 'Low');
+  assert.equal(presentation.riskScore, null);
+  assert.deepEqual(presentation.environmentalConditions, { humidity: 0 });
+  assert.deepEqual(presentation.signals, {});
+  assert.equal(presentation.guidance, null);
+  assert.equal(presentation.disclaimer, null);
 });
 
 test('missing backend fields receive labels and unrecognized fields remain visible', () => {
