@@ -396,6 +396,58 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .disease-predictions li strong { flex: 1; color: #586857; font-size: 10px; font-weight: 650; }
 .disease-predictions li > span:last-child { color: #536e48; font-size: 10px; font-weight: 750; }
 .fertilizer-page { width: 100%; max-width: 1080px; margin: 0 auto; }
+.disease-risk-page { width: 100%; max-width: 1080px; margin: 0 auto; }
+.disease-risk-farm, .disease-risk-panel, .disease-risk-summary { border: 1px solid #e5e9dd; border-radius: 15px; background: #fffefa; box-shadow: 0 5px 18px #26392e08; }
+.disease-risk-farm { display: flex; align-items: center; gap: 13px; padding: 17px 19px; }
+.disease-risk-icon { display: grid; width: 39px; height: 39px; flex: 0 0 39px; place-items: center; border-radius: 12px; color: #56734c; background: #edf2e3; }
+.disease-risk-farm__copy { min-width: 0; }
+.disease-risk-farm__copy h2 { margin: 3px 0 4px; color: #344838; font-family: var(--serif); font-size: 21px; font-weight: 500; overflow-wrap: anywhere; }
+.disease-risk-farm__copy p { display: flex; align-items: center; gap: 5px; margin: 0; color: #859083; font-size: 10px; }
+.disease-risk-farm__crop { display: inline-block; margin-top: 6px; color: #6c8069; font-size: 10px; }
+.disease-risk-farm__status { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; padding: 6px 9px; border-radius: 999px; color: #587546; background: #eff4e5; font-size: 8px; font-weight: 780; letter-spacing: .8px; }
+.disease-risk-action { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 17px 0; }
+.disease-risk-action .button { min-width: 225px; }
+.disease-risk-action > span { color: #8b9689; font-size: 10px; }
+.disease-risk-loading { margin-bottom: 16px; padding: 8px 16px 12px; border: 1px solid #e5e9dd; border-radius: 13px; background: #fbfcf7; }
+.disease-risk-loading .loading-state { min-height: 54px; color: #527047; }
+.disease-risk-loading > p { margin: 0; color: #8a9588; font-size: 10px; text-align: center; }
+.disease-risk-error { margin-bottom: 16px; }
+.disease-risk-missing { display: flex; gap: 13px; margin-bottom: 16px; padding: 17px; border: 1px solid #ead9c8; border-radius: 13px; color: #8a7447; background: #fffaf3; }
+.disease-risk-missing > svg { flex: 0 0 auto; margin-top: 3px; }
+.disease-risk-missing h2 { margin: 0 0 5px; color: #5d4c32; font-family: var(--serif); font-size: 20px; font-weight: 500; }
+.disease-risk-missing p { margin: 0; color: #887d68; font-size: 11px; line-height: 1.6; }
+.disease-risk-missing ul { display: flex; flex-wrap: wrap; gap: 7px 20px; margin: 10px 0 14px; padding-left: 18px; color: #65583f; font-size: 11px; }
+.disease-risk-missing .button { min-height: 36px; font-size: 11px; }
+.disease-risk-results { display: grid; gap: 13px; }
+.disease-risk-summary { overflow: hidden; padding: 20px; color: #f5f5e9; background: linear-gradient(118deg, #204c33 0%, #315f3d 61%, #507345 100%); }
+.disease-risk-summary__top { display: flex; align-items: center; gap: 11px; }
+.disease-risk-summary__top .disease-risk-icon { color: #e0e8ae; background: #eff3ce18; }
+.disease-risk-summary .eyebrow { color: #c1d0b1; }
+.disease-risk-summary h2 { margin: 4px 0 0; color: #fffef1; font-family: var(--serif); font-size: 23px; font-weight: 500; overflow-wrap: anywhere; }
+.disease-risk-badge { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; padding: 7px 10px; border: 1px solid #eff3ce3d; border-radius: 999px; color: #f5f5e9; font-size: 10px; font-weight: 750; text-transform: capitalize; white-space: nowrap; }
+.disease-risk-badge--low { color: #f2f4d7; background: #eff3ce19; }
+.disease-risk-badge--medium { color: #f7df9e; background: #f7df9e17; }
+.disease-risk-badge--high { color: #ffd0bd; background: #e983661c; }
+.disease-risk-score { display: grid; grid-template-columns: auto auto; align-items: baseline; justify-content: start; column-gap: 13px; margin: 20px 0 0 50px; padding-top: 14px; border-top: 1px solid #e1ebd13a; }
+.disease-risk-score > span { color: #c1d0b1; font-size: 10px; }
+.disease-risk-score > strong { color: #f7f6e6; font-size: 20px; font-variant-numeric: tabular-nums; }
+.disease-risk-score > p { grid-column: 1 / -1; margin: 5px 0 0; color: #d0dac6; font-size: 10px; line-height: 1.55; }
+.disease-risk-panel { padding: 18px; }
+.disease-risk-panel__heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid #edf0e7; }
+.disease-risk-panel__heading h2 { margin: 5px 0 0; color: #344838; font-family: var(--serif); font-size: 20px; font-weight: 500; }
+.disease-risk-panel__heading > span { color: #919b8f; font-size: 9px; text-align: right; }
+.disease-risk-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 13px 0 0; }
+.disease-risk-metrics > div, .disease-risk-signals > div { display: flex; min-width: 0; flex-direction: column; gap: 7px; padding: 11px; border: 1px solid #eef0e8; border-radius: 10px; background: #fafbf6; }
+.disease-risk-metrics dt, .disease-risk-signals dt { color: #859083; font-size: 9px; }
+.disease-risk-metrics dd, .disease-risk-signals dd { margin: 0; color: #394e3d; font-size: 13px; font-weight: 700; overflow-wrap: anywhere; }
+.disease-risk-signals { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 13px 0 0; }
+.disease-risk-signals > p { grid-column: 1 / -1; margin: 0; color: #879286; font-size: 11px; }
+.disease-risk-reasoning { display: grid; gap: 9px; margin: 13px 0 0; padding-left: 20px; color: #61715e; font-size: 11px; line-height: 1.6; }
+.disease-risk-empty-copy { margin: 13px 0 0; color: #879286; font-size: 11px; }
+.disease-risk-disclaimer, .disease-risk-prototype-note { display: flex; align-items: flex-start; gap: 10px; padding: 13px 15px; border: 1px solid #eadfc7; border-radius: 11px; color: #9a7947; background: #fffaf0; }
+.disease-risk-disclaimer svg, .disease-risk-prototype-note svg { flex: 0 0 auto; }
+.disease-risk-disclaimer p, .disease-risk-prototype-note { margin: 0; color: #887c65; font-size: 10px; line-height: 1.6; }
+.disease-risk-prototype-note { margin-top: 13px; color: #627361; border-color: #e8ebdf; background: #fafbf5; }
 .fertilizer-farm-panel, .fertilizer-status-panel, .fertilizer-reasoning-panel { padding: 21px; border: 1px solid #e5e9dd; border-radius: 16px; background: #fffefa; box-shadow: 0 5px 18px #26392e08; }
 .fertilizer-panel-heading { display: flex; align-items: center; gap: 12px; }
 .fertilizer-section-icon { display: grid; width: 38px; height: 38px; flex: 0 0 38px; place-items: center; border-radius: 12px; color: #7d6840; background: #f5f0df; }
@@ -634,6 +686,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .irrigation-action-row > span { text-align: center; }
   .irrigation-result-stack { grid-template-columns: 1fr; }
   .fertilizer-results { grid-template-columns: 1fr; }
+  .disease-risk-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .disease-risk-signals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .disease-risk-action { align-items: stretch; flex-direction: column; }
+  .disease-risk-action .button { width: 100%; }
+  .disease-risk-action > span { text-align: center; }
   .disease-mode-picker { grid-template-columns: 1fr; }
   .disease-action-row { align-items: stretch; flex-direction: column; }
   .disease-action-row .button { width: 100%; }
@@ -667,6 +724,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .topbar-divider, .topbar-profile__copy { display: none; }
   .avatar--topbar { width: 29px; height: 29px; }
   .page-content { min-height: calc(100vh - 58px); padding: 24px 15px 24px; }
+  .disease-risk-farm { align-items: flex-start; flex-wrap: wrap; padding: 14px; }
+  .disease-risk-farm__status { margin-left: auto; }
+  .disease-risk-summary { padding: 16px; }
+  .disease-risk-summary__top { align-items: flex-start; flex-wrap: wrap; }
+  .disease-risk-summary h2 { font-size: 20px; }
+  .disease-risk-badge { margin-left: 50px; }
+  .disease-risk-score { margin-left: 0; }
+  .disease-risk-panel { padding: 14px; }
+  .disease-risk-panel__heading { align-items: flex-start; flex-direction: column; gap: 5px; }
+  .disease-risk-panel__heading > span { text-align: left; }
   .crop-farm-panel, .crop-candidates-panel { padding: 15px; }
   .crop-farm-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .crop-action-row { align-items: stretch; flex-direction: column; }
@@ -719,6 +786,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .crop-farm-panel, .crop-candidates-panel { padding: 13px; }
   .irrigation-farm-panel, .irrigation-factors-panel { padding: 13px; }
   .fertilizer-farm-panel, .fertilizer-status-panel, .fertilizer-reasoning-panel { padding: 13px; }
+  .disease-risk-panel { padding: 12px; }
+  .disease-risk-metrics { gap: 6px; }
+  .disease-risk-metrics > div, .disease-risk-signals > div { padding: 8px; }
+  .disease-risk-metrics dt, .disease-risk-signals dt { font-size: 8px; }
   .disease-upload { min-height: 205px; padding: 14px; }
   .disease-farm-context { gap: 9px; padding: 13px; }
   .disease-result { padding: 13px; }
