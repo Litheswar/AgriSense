@@ -39,8 +39,38 @@ export function FarmProvider({ children }) {
     else window.sessionStorage.removeItem(SELECTED_FARM_KEY);
   }, []);
   const refreshFarms = useCallback(() => setRefreshVersion((value) => value + 1), []);
+  const createFarm = useCallback(async (farmData) => {
+    const response = await farmsApi.create(farmData);
+    if (response?.farm) {
+      setFarms((current) => [response.farm, ...current.filter((farm) => farm._id !== response.farm._id)]);
+      setSelectedFarmId(response.farm._id);
+    }
+    return response?.farm;
+  }, [setSelectedFarmId]);
+  const updateFarm = useCallback(async (farmId, changes) => {
+    try {
+      const response = await farmsApi.update(farmId, changes);
+      if (response?.farm) setFarms((current) => current.map((farm) => farm._id === farmId ? response.farm : farm));
+      return response?.farm;
+    } catch (requestError) {
+      if (requestError.status === 404) refreshFarms();
+      throw requestError;
+    }
+  }, [refreshFarms]);
+  const deleteFarm = useCallback(async (farmId) => {
+    try {
+      const response = await farmsApi.remove(farmId);
+      const next = farms.filter((farm) => farm._id !== farmId);
+      setFarms(next);
+      if (selectedFarmId === farmId) setSelectedFarmId(next[0]?._id || '');
+      return response;
+    } catch (requestError) {
+      if (requestError.status === 404) refreshFarms();
+      throw requestError;
+    }
+  }, [farms, refreshFarms, selectedFarmId, setSelectedFarmId]);
   const selectedFarm = farms.find((farm) => farm._id === selectedFarmId) || null;
-  const value = useMemo(() => ({ farms, selectedFarm, selectedFarmId, setSelectedFarmId, loading, error, refreshFarms }), [farms, selectedFarm, selectedFarmId, setSelectedFarmId, loading, error, refreshFarms]);
+  const value = useMemo(() => ({ farms, selectedFarm, selectedFarmId, setSelectedFarmId, loading, error, createFarm, updateFarm, deleteFarm, refreshFarms }), [farms, selectedFarm, selectedFarmId, setSelectedFarmId, loading, error, createFarm, updateFarm, deleteFarm, refreshFarms]);
   return <FarmContext.Provider value={value}>{children}</FarmContext.Provider>;
 }
 

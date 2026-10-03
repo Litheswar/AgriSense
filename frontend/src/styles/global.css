@@ -273,6 +273,52 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .farm-card__facts small { color: #9ba397; font-size: 7px; font-weight: 720; letter-spacing: .9px; }
 .farm-card__facts strong { color: #526456; font-size: 10px; font-weight: 650; }
 .farm-card__button { width: 100%; min-height: 37px; font-size: 10px; }
+.farm-card__actions { display: grid; grid-template-columns: 1.2fr 1fr 1fr 42px; gap: 7px; }
+.farm-card__actions .button { min-height: 37px; gap: 5px; padding: 0 8px; font-size: 10px; }
+.farm-card__delete { color: #9a5948; }
+.button--danger { color: #fff; background: #a74d3c; }
+.button--danger:hover:not(:disabled) { background: #8d3c30; }
+.farm-notice { display: flex; align-items: center; gap: 9px; margin: 0 0 16px; padding: 12px 14px; border: 1px solid #dce7cb; border-radius: 11px; color: #44653c; background: #f3f7ea; font-size: 12px; }
+.farm-notice button { margin-left: auto; border: 0; color: inherit; background: transparent; font-size: 20px; cursor: pointer; }
+.farm-dialog-backdrop { position: fixed; z-index: 30; inset: 0; display: grid; place-items: center; overflow: auto; padding: 24px; background: #17281db3; }
+.farm-dialog, .farm-confirm { width: min(100%, 700px); max-height: min(90vh, 920px); overflow: auto; border: 1px solid #e8eadf; border-radius: 18px; background: #fffefa; box-shadow: 0 24px 80px #0a20144d; }
+.farm-dialog__header { position: sticky; z-index: 1; top: 0; display: flex; align-items: flex-start; justify-content: space-between; padding: 22px 24px 16px; border-bottom: 1px solid #eceee5; background: #fffefa; }
+.farm-dialog__header h2, .farm-confirm h2 { margin: 6px 0 0; color: #2d4333; font-family: var(--serif); font-size: 26px; font-weight: 500; }
+.farm-dialog__close { width: 34px; height: 34px; border: 1px solid #e5e7dc; border-radius: 10px; color: #6c796b; background: #fff; font-size: 21px; cursor: pointer; }
+.farm-form { padding: 5px 24px 22px; }
+.farm-form__section { padding: 18px 0; border-bottom: 1px solid #eceee5; }
+.farm-form__section h3 { margin: 0; color: #435645; font-size: 14px; }
+.farm-form__section > p { margin: 5px 0 15px; color: #8a9588; font-size: 11px; }
+.farm-form__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.farm-form__field { display: flex; min-width: 0; flex-direction: column; gap: 6px; margin: 0 0 12px; color: #536455; font-size: 11px; font-weight: 650; }
+.farm-form__field > span i { color: #a4563b; font-style: normal; }
+.farm-form__field input { width: 100%; min-height: 40px; padding: 0 11px; border: 1px solid #dfe3d8; border-radius: 9px; color: #35473a; background: #fff; font-size: 12px; }
+.farm-form__field input[aria-invalid="true"] { border-color: #c77b61; }
+.farm-form__error, .farm-form__hint { color: #a45c43; font-size: 10px; font-weight: 450; }
+.farm-form__hint { color: #8b9689; }
+.farm-form__server-error { margin: 12px 0; padding: 11px; border: 1px solid #ecd9cf; border-radius: 9px; color: #8f4f3c; background: #fff8f3; font-size: 11px; }
+.farm-form__actions { display: flex; justify-content: flex-end; gap: 9px; padding-top: 17px; }
+.farm-confirm { width: min(100%, 440px); padding: 27px; }
+.farm-confirm__icon { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 13px; color: #9a5948; background: #f8ece5; }
+.farm-confirm h2 { margin-top: 16px; }
+.farm-confirm p { margin: 10px 0 7px; color: #758276; font-size: 13px; line-height: 1.6; }
+.farm-confirm p strong { color: #435545; }
+.farm-onboarding-steps { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 15px; color: #7d8a7d; font-size: 11px; }
+.farm-onboarding-steps span { display: inline-flex; align-items: center; gap: 7px; }
+.farm-onboarding-steps b { display: grid; width: 23px; height: 23px; place-items: center; border-radius: 50%; color: #547144; background: #eaf0dc; font-size: 10px; }
+.farm-details-page .page-header { margin-top: 15px; }
+.farm-back-link { margin-bottom: 8px; }
+.farm-details__actions { display: flex; gap: 8px; }
+.farm-detail-panel { margin-bottom: 14px; padding: 20px; border: 1px solid #e6e9dd; border-radius: 15px; background: #fffefa; }
+.farm-detail-panel__heading { display: flex; align-items: center; gap: 11px; margin-bottom: 17px; }
+.farm-detail-panel__heading h2 { margin: 0; color: #344838; font-family: var(--serif); font-size: 20px; font-weight: 500; }
+.farm-detail-panel__heading p { margin: 4px 0 0; color: #909a8e; font-size: 10px; }
+.farm-detail-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; }
+.farm-detail { display: flex; min-width: 0; flex-direction: column; gap: 5px; padding: 10px; border-radius: 9px; background: #f8f9f3; }
+.farm-detail small { color: #8e998b; font-size: 9px; }
+.farm-detail strong { overflow-wrap: anywhere; color: #425545; font-size: 12px; font-weight: 650; }
+.farm-detail-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.farm-detail-columns .farm-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .page-note { display: flex; align-items: center; gap: 11px; margin-top: 18px; padding: 12px 14px; border: 1px solid #e8ebdf; border-radius: 11px; background: #fafbf5; }
 .page-note__icon { display: grid; width: 31px; height: 31px; flex: 0 0 31px; place-items: center; border-radius: 9px; color: #60794f; background: #edf2e5; }
 .page-note p { margin: 0; color: #879286; font-size: 9px; line-height: 1.55; }
@@ -376,6 +422,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 @media (max-width: 390px) {
+  .farm-dialog-backdrop { place-items: start center; padding: 10px; }
+  .farm-dialog, .farm-confirm { max-height: calc(100vh - 20px); border-radius: 13px; }
+  .farm-dialog__header { padding: 16px; }
+  .farm-form { padding: 4px 16px 16px; }
+  .farm-form__grid { grid-template-columns: 1fr; gap: 0; }
+  .farm-card__actions { grid-template-columns: 1fr 1fr; }
+  .farm-detail-grid, .farm-detail-columns .farm-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .farm-detail-columns { grid-template-columns: 1fr; gap: 0; }
+  .farm-onboarding-steps { align-items: flex-start; flex-direction: column; gap: 7px; }
+  .farm-onboarding-steps > svg { display: none; }
+  .farm-details__actions { flex-wrap: wrap; }
   .page-content { padding-right: 12px; padding-left: 12px; }
   .farm-hero { padding-right: 14px; padding-left: 14px; }
   .farm-hero__meta { max-width: 64%; }

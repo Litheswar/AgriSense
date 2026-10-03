@@ -4,6 +4,7 @@ import { ProtectedRoute, GuestRoute } from './components/ProtectedRoute.jsx';
 import { AppShell } from './components/layout/AppShell.jsx';
 import { DashboardPage } from './pages/DashboardPage.jsx';
 import { FarmsPage } from './pages/FarmsPage.jsx';
+import { FarmDetailsPage } from './pages/FarmDetailsPage.jsx';
 import { AuthPage } from './pages/AuthPage.jsx';
 import { PlaceholderPage } from './pages/PlaceholderPage.jsx';
 import { LoadingState } from './components/ui/Feedback.jsx';
@@ -38,6 +39,7 @@ function AppRoutes() {
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="farms" element={<FarmsPage />} />
+        <Route path="farms/:farmId" element={<FarmDetailsPage />} />
         {placeholders.map(([path, title, description]) => (
           <Route key={path} path={path} element={<PlaceholderPage title={title} description={description} />} />
         ))}

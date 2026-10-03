@@ -85,7 +85,7 @@ export function DashboardPage() {
   if (farmsLoading) return <div className="dashboard-page"><LoadingState label="Loading your farm workspace…" /></div>;
   if (farmsError) return <div className="dashboard-page"><ErrorState title="Your farms could not be loaded" message={farmsError} onRetry={refreshFarms} /></div>;
   if (!farms.length) {
-    return <div className="dashboard-page"><PageHeader eyebrow="YOUR FIELD, IN FOCUS" title={`Good day, ${firstName}`} description="A clear view of your farm starts here." /><EmptyState title="Your farm space is ready" message="There are no farms linked to your account yet. Add one to start seeing conditions and recommendations here." action={<Link className="button button--primary" to="/app/farms">Explore my farms <ArrowRight size={16} /></Link>} /></div>;
+    return <div className="dashboard-page"><PageHeader eyebrow="YOUR FIELD, IN FOCUS" title={`Good day, ${firstName}`} description="A clear view of your farm starts here." /><EmptyState title="Create your first Farm" message="Add your Farm details, then start receiving AI-powered insights. Your dashboard will show real information after a farm is saved." action={<Link className="button button--primary" to="/app/farms?create=1">Create your first farm <ArrowRight size={16} /></Link>} /><div className="farm-onboarding-steps" aria-label="Getting started"><span><b>1</b> Create your first Farm</span><ArrowRight size={15} /><span><b>2</b> Add your Farm details</span><ArrowRight size={15} /><span><b>3</b> Start receiving AI-powered insights</span></div></div>;
   }
   if (!selectedFarm) return <div className="dashboard-page"><LoadingState label="Opening your selected farm…" /></div>;
 
