@@ -319,6 +319,76 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .farm-detail strong { overflow-wrap: anywhere; color: #425545; font-size: 12px; font-weight: 650; }
 .farm-detail-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .farm-detail-columns .farm-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.fertilizer-page { width: 100%; max-width: 1080px; margin: 0 auto; }
+.fertilizer-farm-panel, .fertilizer-status-panel, .fertilizer-reasoning-panel { padding: 21px; border: 1px solid #e5e9dd; border-radius: 16px; background: #fffefa; box-shadow: 0 5px 18px #26392e08; }
+.fertilizer-panel-heading { display: flex; align-items: center; gap: 12px; }
+.fertilizer-section-icon { display: grid; width: 38px; height: 38px; flex: 0 0 38px; place-items: center; border-radius: 12px; color: #7d6840; background: #f5f0df; }
+.fertilizer-panel-heading h2 { margin: 4px 0 0; color: #304234; font-family: var(--serif); font-size: 22px; font-weight: 500; }
+.fertilizer-farm-status { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; padding: 6px 9px; border-radius: 999px; color: #587546; background: #eff4e5; font-size: 8px; font-weight: 780; letter-spacing: .8px; }
+.fertilizer-farm-location { display: flex; align-items: center; gap: 6px; margin: 10px 0 15px 50px; color: #7d8a7d; font-size: 11px; }
+.fertilizer-farm-location svg { color: #819375; }
+.fertilizer-farm-context { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 10px; padding: 10px 12px; border-radius: 10px; background: #f8f9f3; color: #849083; font-size: 10px; }
+.fertilizer-farm-context > span { display: inline-flex; align-items: center; gap: 6px; }
+.fertilizer-farm-context svg { color: #82946f; }
+.fertilizer-farm-context strong { color: #435747; font-size: 11px; font-weight: 700; }
+.fertilizer-soil-values { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.fertilizer-soil-values > div { display: flex; min-width: 0; min-height: 57px; flex-direction: column; justify-content: space-between; gap: 8px; padding: 10px 11px; border: 1px solid #eef0e8; border-radius: 10px; background: #fafbf6; }
+.fertilizer-soil-values span { color: #859083; font-size: 9px; }
+.fertilizer-soil-values strong { color: #394e3d; font-size: 13px; font-weight: 700; }
+.fertilizer-farm-note { display: flex; align-items: center; gap: 6px; margin: 10px 0 0; color: #8a9588; font-size: 9px; }
+.fertilizer-farm-note svg { flex: 0 0 auto; color: #82946f; }
+.fertilizer-action-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 18px 0; }
+.fertilizer-action-row .button { min-width: 245px; }
+.fertilizer-action-row > span { color: #8b9689; font-size: 10px; }
+.fertilizer-loading-panel { margin: 0 0 17px; padding: 9px 17px 13px; border: 1px solid #e5e9dd; border-radius: 13px; background: #fbfcf7; }
+.fertilizer-loading-panel .loading-state { min-height: 58px; color: #806a40; }
+.fertilizer-loading-panel > p { margin: 0; color: #8a9588; font-size: 10px; text-align: center; }
+.fertilizer-error-panel, .fertilizer-missing-panel { margin-bottom: 17px; }
+.fertilizer-missing-panel { display: flex; gap: 13px; padding: 17px; border: 1px solid #ead9c8; border-radius: 13px; background: #fffaf3; }
+.fertilizer-message-icon { display: grid; width: 37px; height: 37px; flex: 0 0 37px; place-items: center; border-radius: 11px; color: #8a7447; background: #f5eedf; }
+.fertilizer-message-content h2 { margin: 1px 0 5px; color: #5d4c32; font-family: var(--serif); font-size: 20px; font-weight: 500; }
+.fertilizer-message-content p { margin: 0; color: #887d68; font-size: 11px; line-height: 1.6; }
+.fertilizer-message-content ul { display: flex; flex-wrap: wrap; gap: 7px 20px; margin: 10px 0 14px; padding-left: 18px; color: #65583f; font-size: 11px; }
+.fertilizer-message-content .button { min-height: 36px; font-size: 11px; }
+.fertilizer-results { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 13px; }
+.fertilizer-status-panel { grid-column: 1 / -1; }
+.fertilizer-result-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding-bottom: 13px; border-bottom: 1px solid #edf0e7; }
+.fertilizer-result-heading h2 { margin: 5px 0 0; color: #344838; font-family: var(--serif); font-size: 21px; font-weight: 500; }
+.fertilizer-result-heading > span { color: #919b8f; font-size: 9px; text-align: right; }
+.fertilizer-nutrient-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.fertilizer-nutrient { display: flex; min-width: 0; min-height: 74px; align-items: center; justify-content: space-between; gap: 8px; padding: 12px; border: 1px solid #e8ebdf; border-radius: 12px; background: #fafbf6; }
+.fertilizer-nutrient__identity { display: flex; min-width: 0; align-items: center; gap: 9px; color: #667464; font-size: 10px; }
+.fertilizer-nutrient__symbol { display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; border-radius: 10px; color: #566c47; background: #edf2e3; font-family: var(--serif); font-size: 16px; }
+.fertilizer-nutrient > strong { padding: 6px 8px; border: 1px solid currentColor; border-radius: 99px; color: #566c47; font-size: 9px; font-weight: 750; text-transform: capitalize; white-space: nowrap; }
+.fertilizer-nutrient--low > strong { color: #8a5d3f; background: #fff5ec; }
+.fertilizer-nutrient--adequate > strong { color: #55734b; background: #f1f6e9; }
+.fertilizer-nutrient--high > strong { color: #80683d; background: #faf5e8; }
+.fertilizer-nutrient--unknown > strong { color: #687568; background: #f2f4ef; }
+.fertilizer-ph-status { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; padding: 11px 13px; border: 1px solid #eef0e8; border-radius: 10px; background: #fafbf6; color: #859083; font-size: 10px; }
+.fertilizer-ph-status strong { color: #435747; font-size: 11px; text-transform: capitalize; }
+.fertilizer-advice-panel { display: flex; gap: 13px; padding: 19px; border: 1px solid #e7e2d2; border-radius: 15px; background: linear-gradient(145deg, #fffdf5, #fbfaf3); }
+.fertilizer-advice-panel__icon { display: grid; width: 38px; height: 38px; flex: 0 0 38px; place-items: center; border-radius: 11px; color: #76613b; background: #f3ecd8; }
+.fertilizer-advice-panel__body { min-width: 0; flex: 1; }
+.fertilizer-advice-panel h2 { margin: 4px 0 8px; color: #344838; font-family: var(--serif); font-size: 21px; font-weight: 500; }
+.fertilizer-advice-panel__body > p { margin: 0; color: #596956; font-size: 12px; line-height: 1.7; }
+.fertilizer-priorities { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #e8e6db; }
+.fertilizer-priorities > span { color: #7d8879; font-size: 9px; font-weight: 700; }
+.fertilizer-priorities ul { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.fertilizer-priorities li { padding: 5px 8px; border: 1px solid #eadcc8; border-radius: 99px; color: #7a5e3e; background: #fff8ec; font-size: 9px; font-weight: 750; }
+.fertilizer-advice-panel__body > .fertilizer-no-priorities { margin-top: 12px; color: #778373; font-size: 10px; }
+.fertilizer-caution { display: flex; grid-column: 1 / -1; gap: 10px; padding: 14px 16px; border: 1px solid #ead3c5; border-radius: 12px; color: #8b523e; background: #fff7f1; }
+.fertilizer-caution > svg { flex: 0 0 auto; margin-top: 1px; }
+.fertilizer-caution strong { color: #764937; font-size: 11px; }
+.fertilizer-caution p { margin: 4px 0 0; color: #795f52; font-size: 10px; line-height: 1.6; }
+.fertilizer-reasoning-panel { display: flex; flex-direction: column; }
+.fertilizer-reasoning-panel .fertilizer-result-heading { align-items: flex-start; flex-direction: column; gap: 5px; }
+.fertilizer-reasoning-panel .fertilizer-result-heading > span { text-align: left; }
+.fertilizer-reasoning-panel ul { display: flex; flex-direction: column; gap: 10px; margin: 14px 0 0; padding-left: 18px; color: #687667; font-size: 10px; line-height: 1.6; }
+.fertilizer-reasoning-panel > p { margin: 14px 0 0; color: #879286; font-size: 10px; }
+.fertilizer-prototype-note { display: flex; grid-column: 1 / -1; gap: 10px; padding: 12px 15px; border: 1px solid #eadfc7; border-radius: 11px; color: #947548; background: #fffaf0; }
+.fertilizer-prototype-note > svg { flex: 0 0 auto; }
+.fertilizer-prototype-note p { margin: 0; color: #887c65; font-size: 9px; line-height: 1.6; }
+.fertilizer-prototype-note strong { color: #745f3d; }
 .irrigation-page { width: 100%; max-width: 1080px; margin: 0 auto; }
 .irrigation-farm-panel, .irrigation-factors-panel { padding: 21px; border: 1px solid #e5e9dd; border-radius: 16px; background: #fffefa; box-shadow: 0 5px 18px #26392e08; }
 .irrigation-panel-heading { display: flex; align-items: center; gap: 12px; }
@@ -464,6 +534,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .farms-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .crop-result-stack { grid-template-columns: 1fr 1fr; }
   .irrigation-result-stack { grid-template-columns: 1fr 1fr; }
+  .fertilizer-results { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 860px) {
@@ -485,6 +556,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .irrigation-action-row .button { width: 100%; }
   .irrigation-action-row > span { text-align: center; }
   .irrigation-result-stack { grid-template-columns: 1fr; }
+  .fertilizer-results { grid-template-columns: 1fr; }
+  .fertilizer-soil-values { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fertilizer-action-row { align-items: stretch; flex-direction: column; }
+  .fertilizer-action-row .button { width: 100%; }
+  .fertilizer-action-row > span { text-align: center; }
   .irrigation-decision { min-height: 250px; }
 }
 
@@ -561,6 +637,22 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media (max-width: 390px) {
   .crop-farm-panel, .crop-candidates-panel { padding: 13px; }
   .irrigation-farm-panel, .irrigation-factors-panel { padding: 13px; }
+  .fertilizer-farm-panel, .fertilizer-status-panel, .fertilizer-reasoning-panel { padding: 13px; }
+  .fertilizer-panel-heading { gap: 8px; }
+  .fertilizer-panel-heading h2 { font-size: 19px; }
+  .fertilizer-section-icon { width: 33px; height: 33px; flex-basis: 33px; }
+  .fertilizer-farm-location { margin-left: 41px; }
+  .fertilizer-soil-values > div { padding: 8px; }
+  .fertilizer-soil-values span { font-size: 8px; }
+  .fertilizer-nutrient-grid { gap: 6px; }
+  .fertilizer-nutrient { align-items: flex-start; flex-direction: column; padding: 9px; }
+  .fertilizer-nutrient__identity { gap: 6px; font-size: 8px; }
+  .fertilizer-nutrient__symbol { width: 29px; height: 29px; flex-basis: 29px; }
+  .fertilizer-nutrient > strong { font-size: 8px; }
+  .fertilizer-result-heading { align-items: flex-start; flex-direction: column; gap: 5px; }
+  .fertilizer-result-heading > span { text-align: left; }
+  .fertilizer-advice-panel { gap: 9px; padding: 13px; }
+  .fertilizer-missing-panel { gap: 9px; padding: 13px; }
   .irrigation-panel-heading { gap: 8px; }
   .irrigation-panel-heading h2 { font-size: 19px; }
   .irrigation-section-icon { width: 33px; height: 33px; flex-basis: 33px; }
