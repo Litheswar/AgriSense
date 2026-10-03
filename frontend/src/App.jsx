@@ -5,6 +5,7 @@ import { AppShell } from './components/layout/AppShell.jsx';
 import { DashboardPage } from './pages/DashboardPage.jsx';
 import { FarmsPage } from './pages/FarmsPage.jsx';
 import { FarmDetailsPage } from './pages/FarmDetailsPage.jsx';
+import { CropRecommendationPage } from './pages/CropRecommendationPage.jsx';
 import { AuthPage } from './pages/AuthPage.jsx';
 import { PlaceholderPage } from './pages/PlaceholderPage.jsx';
 import { LoadingState } from './components/ui/Feedback.jsx';
@@ -16,7 +17,6 @@ function HomeRedirect() {
 }
 
 const placeholders = [
-  ['crop-recommendation', 'Crop recommendation', 'Compare crops against your farm’s soil and local conditions.'],
   ['irrigation', 'Irrigation', 'View water guidance based on field moisture and weather.'],
   ['fertilizer', 'Fertilizer', 'Explore nutrient guidance for your current crop.'],
   ['disease-detection', 'Disease detection', 'A guided leaf image workflow is planned for a later milestone.'],
@@ -40,6 +40,7 @@ function AppRoutes() {
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="farms" element={<FarmsPage />} />
         <Route path="farms/:farmId" element={<FarmDetailsPage />} />
+        <Route path="crop-recommendation" element={<CropRecommendationPage />} />
         {placeholders.map(([path, title, description]) => (
           <Route key={path} path={path} element={<PlaceholderPage title={title} description={description} />} />
         ))}
