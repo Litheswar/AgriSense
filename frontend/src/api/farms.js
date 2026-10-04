@@ -7,5 +7,7 @@ export const farmsApi = {
   update: (farmId, changes) => apiRequest(idPath(farmId), { method: 'PATCH', body: changes }),
   replace: (farmId, farm) => apiRequest(idPath(farmId), { method: 'PUT', body: farm }),
   remove: (farmId) => apiRequest(idPath(farmId), { method: 'DELETE' }),
-  sharedState: (farmId) => apiRequest(idPath(farmId, '/shared-state'))
+  sharedState: (farmId) => apiRequest(idPath(farmId, '/shared-state')),
+  weather: (farmId) => apiRequest(idPath(farmId, '/weather')),
+  refreshWeather: (farmId) => apiRequest(idPath(farmId, '/weather/refresh'), { method: 'POST' })
 };

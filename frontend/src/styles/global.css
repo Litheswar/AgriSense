@@ -325,6 +325,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .farm-form__hint { color: #8b9689; }
 .farm-form__server-error { margin: 12px 0; padding: 11px; border: 1px solid #ecd9cf; border-radius: 9px; color: #8f4f3c; background: #fff8f3; font-size: 11px; }
 .farm-form__actions { display: flex; justify-content: flex-end; gap: 9px; padding-top: 17px; }
+.farm-detail-weather-error { margin: 0 0 12px; padding: 9px 10px; border: 1px solid #ecd9cf; border-radius: 8px; color: #8f4f3c; background: #fff8f3; font-size: 11px; }
 .farm-confirm { width: min(100%, 440px); padding: 27px; }
 .farm-confirm__icon { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 13px; color: #9a5948; background: #f8ece5; }
 .farm-confirm h2 { margin-top: 16px; }

@@ -91,10 +91,27 @@ exports.createFarm = async (req, res) => {
       throw err;
     }
     const farm = await farmService.createFarm({ ...req.body, ownerId: req.user.id });
+    let weatherStatus = 'NOT_REQUESTED';
+    const latitude = farm.location?.latitude;
+    const longitude = farm.location?.longitude;
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+      try {
+        await farmWeatherService.refreshWeather(farm._id.toString(), farm);
+        weatherStatus = 'FETCHED';
+      } catch (weatherError) {
+        // Farm creation remains valid when a provider is unavailable. The UI can
+        // distinguish missing weather and offer a later refresh without inventing data.
+        weatherStatus = 'UNAVAILABLE';
+        console.warn(`[AgriSense Weather] Initial refresh unavailable: ${weatherError.code || weatherError.message}`);
+      }
+    } else {
+      weatherStatus = 'COORDINATES_REQUIRED';
+    }
     return res.status(201).json({
       success: true,
       farm: farm.toObject ? farm.toObject() : farm,
-      sharedFarmState: farm.toSharedFarmState ? farm.toSharedFarmState() : undefined
+      sharedFarmState: farm.toSharedFarmState ? farm.toSharedFarmState() : undefined,
+      weatherStatus
     });
   } catch (err) {
     return sendError(res, err);
