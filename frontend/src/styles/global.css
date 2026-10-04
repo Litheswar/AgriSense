@@ -1078,3 +1078,77 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .market-price-range dd { margin: 0; text-align: right; }
   .market-trend-card__top { align-items: flex-start; flex-direction: column; gap: 6px; }
 }
+
+.farm-evaluation-page { width: 100%; max-width: 1180px; margin: 0 auto; }
+.evaluation-farm-summary, .evaluation-overview, .evaluation-card { border: 1px solid #e5e9dd; border-radius: 15px; background: #fffefa; box-shadow: 0 5px 18px #26392e08; }
+.evaluation-farm-summary { display: flex; align-items: center; gap: 13px; padding: 17px 19px; }
+.evaluation-farm-summary__icon { display: grid; width: 40px; height: 40px; flex: 0 0 40px; place-items: center; border-radius: 12px; color: #56734c; background: #edf2e3; }
+.evaluation-farm-summary__copy { min-width: 0; }
+.evaluation-farm-summary__copy h2 { margin: 3px 0 4px; color: #344838; font-family: var(--serif); font-size: 21px; font-weight: 500; overflow-wrap: anywhere; }
+.evaluation-farm-summary__copy p { display: flex; align-items: center; gap: 5px; margin: 0; color: #859083; font-size: 10px; }
+.evaluation-farm-summary__copy p svg { flex: 0 0 auto; }
+.evaluation-farm-summary__updated { display: inline-block; margin-top: 5px; color: #9aa397; font-size: 9px; }
+.evaluation-farm-summary__selected { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; padding: 6px 9px; border-radius: 999px; color: #587546; background: #eff4e5; font-size: 8px; font-weight: 780; letter-spacing: .8px; white-space: nowrap; }
+.evaluation-method-note { display: flex; align-items: flex-start; gap: 10px; margin-top: 13px; padding: 12px 14px; border: 1px solid #e8ebdf; border-radius: 11px; color: #657c56; background: #fafbf5; }
+.evaluation-method-note > svg { flex: 0 0 auto; margin-top: 2px; }
+.evaluation-method-note p { margin: 0; color: #7f8c7d; font-size: 10px; line-height: 1.6; }
+.evaluation-actions { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; margin: 17px 0; }
+.evaluation-actions .button { min-width: 205px; }
+.evaluation-actions > span { color: #8b9689; font-size: 10px; }
+.evaluation-loading { margin-bottom: 16px; padding: 8px 16px 12px; border: 1px solid #e5e9dd; border-radius: 13px; background: #fbfcf7; }
+.evaluation-loading .loading-state { min-height: 54px; color: #527047; }
+.evaluation-loading > p { margin: 0; color: #8a9588; font-size: 10px; line-height: 1.5; text-align: center; }
+.evaluation-error { margin-bottom: 13px; }
+.evaluation-missing-fields { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin: 0 0 15px; padding: 13px 15px; border: 1px solid #ead9c8; border-radius: 12px; color: #66583f; background: #fffaf3; }
+.evaluation-missing-fields strong { font-size: 11px; }
+.evaluation-missing-fields ul { display: flex; flex-wrap: wrap; gap: 5px 19px; margin: 7px 0 0; padding-left: 17px; font-size: 10px; }
+.evaluation-missing-fields .button { flex: 0 0 auto; min-height: 35px; font-size: 10px; }
+.evaluation-results { display: grid; gap: 14px; }
+.evaluation-overview { display: flex; align-items: center; gap: 13px; padding: 17px 19px; }
+.evaluation-overview__icon { display: grid; width: 42px; height: 42px; flex: 0 0 42px; place-items: center; border-radius: 13px; color: #477044; background: #edf5e8; }
+.evaluation-overview--partial .evaluation-overview__icon, .evaluation-overview--unknown .evaluation-overview__icon { color: #846735; background: #fff2d8; }
+.evaluation-overview h2 { margin: 3px 0 3px; color: #344838; font-family: var(--serif); font-size: 23px; font-weight: 500; }
+.evaluation-overview p { margin: 0; color: #7f8c7d; font-size: 10px; line-height: 1.5; }
+.evaluation-overview__count { margin-left: auto; color: #879286; font-size: 9px; text-align: right; white-space: nowrap; }
+.evaluation-component-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.evaluation-card { min-width: 0; padding: 15px; }
+.evaluation-card__header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 11px; border-bottom: 1px solid #edf0e8; }
+.evaluation-card__icon { display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; border-radius: 11px; color: #58734d; background: #eff3e9; }
+.evaluation-card__header > div { display: flex; align-items: center; justify-content: space-between; flex: 1; gap: 8px; min-width: 0; }
+.evaluation-card__header h3 { margin: 0; color: #344838; font-family: var(--serif); font-size: 17px; font-weight: 500; }
+.evaluation-badge { display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 999px; color: #59734e; background: #eff4e8; font-size: 8px; font-weight: 720; text-align: center; }
+.evaluation-badge--partial, .evaluation-badge--incomplete, .evaluation-badge--unavailable { color: #866c3b; background: #fff4df; }
+.evaluation-badge--error { color: #985953; background: #fff0ed; }
+.evaluation-badge--unknown { color: #687368; background: #f0f2ec; }
+.evaluation-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin: 0; }
+.evaluation-field { min-width: 0; padding: 9px 10px; border-radius: 9px; background: #f8f9f4; }
+.evaluation-field dt { margin-bottom: 4px; color: #899386; font-size: 9px; text-transform: capitalize; }
+.evaluation-field dd { margin: 0; color: #475a45; font-size: 11px; font-weight: 650; line-height: 1.45; overflow-wrap: anywhere; white-space: pre-wrap; }
+.evaluation-lists { display: grid; gap: 9px; }
+.evaluation-value-list { margin-top: 10px; }
+.evaluation-value-list h4 { margin: 0 0 5px; color: #64745f; font-size: 9px; font-weight: 750; text-transform: uppercase; letter-spacing: .5px; }
+.evaluation-value-list ul { display: grid; gap: 5px; margin: 0; padding-left: 17px; color: #687568; font-size: 10px; line-height: 1.5; }
+.evaluation-warning, .evaluation-fallback-note { display: flex; align-items: flex-start; gap: 7px; margin: 10px 0 0; padding: 9px 10px; border: 1px solid #eee6d2; border-radius: 9px; color: #7d6a46; background: #fffbf2; font-size: 9px; line-height: 1.5; }
+.evaluation-warning svg, .evaluation-fallback-note svg { flex: 0 0 auto; }
+.evaluation-component-error { color: #7f6b4c; font-size: 10px; line-height: 1.5; }
+.evaluation-component-error p { margin: 0 0 8px; }
+.evaluation-component-error > span { font-size: 9px; font-weight: 700; }
+.evaluation-component-error ul { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 5px 0 10px; padding-left: 16px; }
+.evaluation-component-error .button { min-height: 34px; font-size: 9px; }
+.evaluation-no-details, .evaluation-empty-results { margin: 0; padding: 12px; border: 1px dashed #e3e8dc; border-radius: 9px; color: #899386; font-size: 10px; }
+.evaluation-caveat { display: flex; align-items: flex-start; gap: 8px; margin: 0; color: #869084; font-size: 9px; line-height: 1.6; }
+.evaluation-caveat svg { flex: 0 0 auto; }
+@media (max-width: 760px) {
+  .evaluation-component-grid { grid-template-columns: 1fr; }
+  .evaluation-card { padding: 13px; }
+}
+@media (max-width: 520px) {
+  .evaluation-farm-summary { align-items: flex-start; padding: 14px; }
+  .evaluation-farm-summary__selected { margin-left: auto; }
+  .evaluation-farm-summary__copy p { align-items: flex-start; flex-wrap: wrap; line-height: 1.5; }
+  .evaluation-overview { align-items: flex-start; flex-wrap: wrap; padding: 14px; }
+  .evaluation-overview__count { width: 100%; margin: 0 0 0 55px; text-align: left; }
+  .evaluation-fields { grid-template-columns: 1fr; }
+  .evaluation-missing-fields { align-items: flex-start; flex-direction: column; }
+  .evaluation-card__header h3 { font-size: 16px; }
+}

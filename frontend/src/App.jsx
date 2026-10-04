@@ -13,8 +13,8 @@ import { DiseaseRiskPage } from './pages/DiseaseRiskPage.jsx';
 import { WeatherPage } from './pages/WeatherPage.jsx';
 import { CropRankingPage } from './pages/CropRankingPage.jsx';
 import { MarketPage } from './pages/MarketPage.jsx';
+import { FarmEvaluationPage } from './pages/FarmEvaluationPage.jsx';
 import { AuthPage } from './pages/AuthPage.jsx';
-import { PlaceholderPage } from './pages/PlaceholderPage.jsx';
 import { LoadingState } from './components/ui/Feedback.jsx';
 
 function HomeRedirect() {
@@ -22,10 +22,6 @@ function HomeRedirect() {
   if (!ready) return <LoadingState label="Checking your session…" fullPage />;
   return <Navigate to={user ? '/app/dashboard' : '/login'} replace />;
 }
-
-const placeholders = [
-  ['evaluation', 'Farm evaluation', 'Bring farm recommendations together in one assessment.']
-];
 
 function AppRoutes() {
   return (
@@ -48,9 +44,7 @@ function AppRoutes() {
         <Route path="weather" element={<WeatherPage />} />
         <Route path="crop-ranking" element={<CropRankingPage />} />
         <Route path="market" element={<MarketPage />} />
-        {placeholders.map(([path, title, description]) => (
-          <Route key={path} path={path} element={<PlaceholderPage title={title} description={description} />} />
-        ))}
+        <Route path="evaluation" element={<FarmEvaluationPage />} />
       </Route>
       <Route path="*" element={<HomeRedirect />} />
     </Routes>
