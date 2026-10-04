@@ -448,6 +448,55 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .disease-risk-disclaimer svg, .disease-risk-prototype-note svg { flex: 0 0 auto; }
 .disease-risk-disclaimer p, .disease-risk-prototype-note { margin: 0; color: #887c65; font-size: 10px; line-height: 1.6; }
 .disease-risk-prototype-note { margin-top: 13px; color: #627361; border-color: #e8ebdf; background: #fafbf5; }
+.weather-page { width: 100%; max-width: 1080px; margin: 0 auto; }
+.weather-farm-context, .weather-status-panel, .weather-data-panel { border: 1px solid #e5e9dd; border-radius: 15px; background: #fffefa; box-shadow: 0 5px 18px #26392e08; }
+.weather-farm-context { display: flex; align-items: center; gap: 13px; padding: 17px 19px; }
+.weather-farm-context__icon { display: grid; width: 39px; height: 39px; flex: 0 0 39px; place-items: center; border-radius: 12px; color: #587449; background: #edf2e3; }
+.weather-farm-context__copy { min-width: 0; }
+.weather-farm-context__copy h2 { margin: 3px 0 4px; color: #344838; font-family: var(--serif); font-size: 21px; font-weight: 500; overflow-wrap: anywhere; }
+.weather-farm-context__copy p { margin: 0; color: #859083; font-size: 10px; overflow-wrap: anywhere; }
+.weather-farm-context__coordinates { display: inline-block; margin-top: 5px; color: #71816e; font-size: 9px; font-variant-numeric: tabular-nums; }
+.weather-farm-context__active { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; padding: 6px 9px; border-radius: 999px; color: #587546; background: #eff4e5; font-size: 8px; font-weight: 780; letter-spacing: .8px; white-space: nowrap; }
+.weather-actions { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 17px 0; }
+.weather-actions .button { min-width: 190px; }
+.weather-actions > span { color: #8b9689; font-size: 10px; }
+.weather-loading { margin-bottom: 16px; padding: 8px 16px 12px; border: 1px solid #e5e9dd; border-radius: 13px; background: #fbfcf7; }
+.weather-loading .loading-state { min-height: 54px; color: #527047; }
+.weather-loading > p { margin: 0; color: #8a9588; font-size: 10px; line-height: 1.5; text-align: center; }
+.weather-location-required, .weather-information-note { display: flex; align-items: flex-start; gap: 10px; padding: 13px 15px; border: 1px solid #eadfc7; border-radius: 11px; color: #9a7947; background: #fffaf0; }
+.weather-location-required { margin: 0 0 15px; }
+.weather-location-required > svg, .weather-information-note > svg { flex: 0 0 auto; margin-top: 2px; }
+.weather-location-required strong { color: #745f3d; font-size: 11px; }
+.weather-location-required p { margin: 4px 0 11px; color: #887c65; font-size: 10px; line-height: 1.55; }
+.weather-location-required .button { min-height: 34px; font-size: 10px; }
+.weather-error { margin: 0 0 15px; }
+.weather-success { display: flex; align-items: center; gap: 8px; margin-bottom: 13px; padding: 10px 13px; border: 1px solid #dbe8d4; border-radius: 10px; color: #4d7046; background: #f4f8ee; font-size: 10px; }
+.weather-status-panel, .weather-data-panel { margin-bottom: 13px; padding: 18px; }
+.weather-status-panel__heading, .weather-data-panel__heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid #edf0e7; }
+.weather-status-panel__heading h2, .weather-data-panel__heading h2 { margin: 5px 0 0; color: #344838; font-family: var(--serif); font-size: 20px; font-weight: 500; }
+.weather-freshness { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 999px; font-size: 9px; font-weight: 800; letter-spacing: .65px; }
+.weather-freshness--recent { color: #456c42; background: #edf5e8; }
+.weather-freshness--stale { color: #806339; background: #faf1de; }
+.weather-freshness--unknown { color: #68736b; background: #eff1ec; }
+.weather-freshness__dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.weather-status-panel__description { margin: 11px 0 0; color: #6c7d69; font-size: 10px; line-height: 1.55; }
+.weather-stale-note { margin: 9px 0 0; padding: 10px 12px; border-left: 3px solid #c39b52; border-radius: 0 8px 8px 0; color: #755e38; background: #fbf5e7; font-size: 10px; line-height: 1.55; }
+.weather-provenance { display: flex; flex-wrap: wrap; gap: 10px 28px; margin: 13px 0 0; }
+.weather-provenance > div { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.weather-provenance dt { color: #8b9688; font-size: 8px; font-weight: 750; letter-spacing: .8px; text-transform: uppercase; }
+.weather-provenance dd { margin: 0; color: #526650; font-size: 10px; overflow-wrap: anywhere; }
+.weather-data-panel__heading > span { color: #919b8f; font-size: 9px; text-align: right; }
+.weather-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-top: 13px; }
+.weather-metric { display: flex; min-width: 0; min-height: 72px; align-items: center; gap: 10px; padding: 12px; border: 1px solid #eef0e8; border-radius: 11px; background: #fafbf6; }
+.weather-metric__icon { display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; border-radius: 10px; color: #648054; background: #edf2e5; }
+.weather-metric__copy { display: flex; min-width: 0; flex-direction: column; gap: 6px; }
+.weather-metric__copy > span { color: #7e8c7b; font-size: 9px; line-height: 1.35; }
+.weather-metric__copy > strong { color: #3d5140; font-size: 18px; font-variant-numeric: tabular-nums; font-weight: 700; overflow-wrap: anywhere; }
+.weather-metric__copy > strong small { color: #819080; font-size: 10px; font-weight: 550; }
+.weather-no-data { margin: 14px 0 0; color: #879286; font-size: 11px; }
+.weather-information-note { margin-top: 13px; color: #607850; border-color: #e3e9d8; background: #f8faf2; }
+.weather-information-note p { margin: 0; color: #778373; font-size: 10px; line-height: 1.6; }
+.weather-information-note strong { color: #536c47; }
 .fertilizer-farm-panel, .fertilizer-status-panel, .fertilizer-reasoning-panel { padding: 21px; border: 1px solid #e5e9dd; border-radius: 16px; background: #fffefa; box-shadow: 0 5px 18px #26392e08; }
 .fertilizer-panel-heading { display: flex; align-items: center; gap: 12px; }
 .fertilizer-section-icon { display: grid; width: 38px; height: 38px; flex: 0 0 38px; place-items: center; border-radius: 12px; color: #7d6840; background: #f5f0df; }
@@ -691,6 +740,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .disease-risk-action { align-items: stretch; flex-direction: column; }
   .disease-risk-action .button { width: 100%; }
   .disease-risk-action > span { text-align: center; }
+  .weather-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .weather-actions { align-items: stretch; flex-direction: column; }
+  .weather-actions .button { width: 100%; }
+  .weather-actions > span { text-align: center; }
   .disease-mode-picker { grid-template-columns: 1fr; }
   .disease-action-row { align-items: stretch; flex-direction: column; }
   .disease-action-row .button { width: 100%; }
@@ -724,6 +777,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .topbar-divider, .topbar-profile__copy { display: none; }
   .avatar--topbar { width: 29px; height: 29px; }
   .page-content { min-height: calc(100vh - 58px); padding: 24px 15px 24px; }
+  .weather-farm-context { align-items: flex-start; flex-wrap: wrap; padding: 14px; }
+  .weather-farm-context__active { margin-left: auto; }
+  .weather-status-panel, .weather-data-panel { padding: 14px; }
+  .weather-status-panel__heading, .weather-data-panel__heading { align-items: flex-start; flex-direction: column; gap: 7px; }
+  .weather-data-panel__heading > span { text-align: left; }
+  .weather-freshness { align-self: flex-start; }
+  .weather-metrics { grid-template-columns: 1fr 1fr; gap: 7px; }
+  .weather-metric { align-items: flex-start; flex-direction: column; gap: 8px; padding: 10px; }
+  .weather-provenance { gap: 10px 18px; }
   .disease-risk-farm { align-items: flex-start; flex-wrap: wrap; padding: 14px; }
   .disease-risk-farm__status { margin-left: auto; }
   .disease-risk-summary { padding: 16px; }
@@ -787,6 +849,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .irrigation-farm-panel, .irrigation-factors-panel { padding: 13px; }
   .fertilizer-farm-panel, .fertilizer-status-panel, .fertilizer-reasoning-panel { padding: 13px; }
   .disease-risk-panel { padding: 12px; }
+  .weather-status-panel, .weather-data-panel { padding: 12px; }
+  .weather-metric { padding: 8px; }
+  .weather-metric__copy > span { font-size: 8px; }
+  .weather-metric__copy > strong { font-size: 16px; }
   .disease-risk-metrics { gap: 6px; }
   .disease-risk-metrics > div, .disease-risk-signals > div { padding: 8px; }
   .disease-risk-metrics dt, .disease-risk-signals dt { font-size: 8px; }

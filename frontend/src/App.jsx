@@ -10,6 +10,7 @@ import { IrrigationPage } from './pages/IrrigationPage.jsx';
 import { FertilizerPage } from './pages/FertilizerPage.jsx';
 import { DiseaseDetectionPage } from './pages/DiseaseDetectionPage.jsx';
 import { DiseaseRiskPage } from './pages/DiseaseRiskPage.jsx';
+import { WeatherPage } from './pages/WeatherPage.jsx';
 import { AuthPage } from './pages/AuthPage.jsx';
 import { PlaceholderPage } from './pages/PlaceholderPage.jsx';
 import { LoadingState } from './components/ui/Feedback.jsx';
@@ -21,7 +22,6 @@ function HomeRedirect() {
 }
 
 const placeholders = [
-  ['weather', 'Weather', 'See persisted farm weather and refresh conditions for your location.'],
   ['market', 'Market intelligence', 'Review crop market context and price signals.'],
   ['crop-ranking', 'Crop ranking', 'Compare suitable crops using agronomic and market context.'],
   ['evaluation', 'Farm evaluation', 'Bring farm recommendations together in one assessment.']
@@ -45,6 +45,7 @@ function AppRoutes() {
         <Route path="fertilizer" element={<FertilizerPage />} />
         <Route path="disease-detection" element={<DiseaseDetectionPage />} />
         <Route path="disease-risk" element={<DiseaseRiskPage />} />
+        <Route path="weather" element={<WeatherPage />} />
         {placeholders.map(([path, title, description]) => (
           <Route key={path} path={path} element={<PlaceholderPage title={title} description={description} />} />
         ))}
