@@ -15,7 +15,10 @@ import json
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-from predict import CropRecommender, CropInferenceError, predict_crop
+try:
+    from .predict import CropRecommender, CropInferenceError, predict_crop
+except ImportError:  # Supports direct script execution as well as pytest package collection.
+    from predict import CropRecommender, CropInferenceError, predict_crop
 
 def run_inference_tests():
     print("=" * 75)

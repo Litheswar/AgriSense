@@ -27,11 +27,16 @@ require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
 
 const app = require('../server');
 const Farm = require('../db/models/Farm');
+const User = require('../db/models/User');
+const { hashPassword } = require('../services/passwordService');
+const { issueToken } = require('../services/authTokenService');
 const farmService = require('../services/farmService');
 const { connectDB, disconnectDB } = require('../config/db');
 
 let passed = 0;
 let failed = 0;
+let testUser = null;
+let testToken = null;
 
 function assert(condition, message) {
   if (!condition) {
@@ -52,6 +57,7 @@ function makeHttpRequest(server, method, reqPath, body = null) {
       method: method,
       headers: {
         'Content-Type': 'application/json',
+        ...(testToken ? { Authorization: `Bearer ${testToken}` } : {}),
         ...(bodyStr ? { 'Content-Length': Buffer.byteLength(bodyStr) } : {})
       }
     };
@@ -92,6 +98,9 @@ async function runE2ESuite() {
   assert(mongoose.connection.name === 'agrisense', `Connected database '${mongoose.connection.name}' is not 'agrisense'`);
 
   console.log(`  [PASS] Connected to MongoDB Atlas: ${mongoose.connection.host}/${mongoose.connection.name}`);
+
+  testUser = await User.create({ name: 'E2E Harness', email: `e2e-${Date.now()}@example.test`, passwordHash: await hashPassword(`fixture-${Date.now()}`) });
+  testToken = issueToken(testUser._id);
 
   const server = http.createServer(app);
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -402,6 +411,7 @@ async function runE2ESuite() {
     if (farmId) {
       await Farm.findByIdAndDelete(farmId).catch(() => {});
     }
+    if (testUser) await User.deleteOne({ _id: testUser._id }).catch(() => {});
     await disconnectDB();
   }
 

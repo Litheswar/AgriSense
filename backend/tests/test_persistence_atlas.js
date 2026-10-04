@@ -22,12 +22,17 @@ require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
 const mongoose = require('mongoose');
 const app = require('../server');
 const Farm = require('../db/models/Farm');
+const User = require('../db/models/User');
+const { hashPassword } = require('../services/passwordService');
+const { issueToken } = require('../services/authTokenService');
 const farmService = require('../services/farmService');
 const { connectDB, disconnectDB, getConnectionStatus, getDetailedStatus, getLastConnectionError } = require('../config/db');
 
 let passed = 0;
 let failed = 0;
 let skipped = 0;
+let testUser = null;
+let testToken = null;
 
 function assert(condition, message) {
   if (!condition) {
@@ -49,6 +54,7 @@ function makeHttpRequest(server, method, reqPath, body = null) {
       method: method,
       headers: {
         'Content-Type': 'application/json',
+        ...(testToken ? { Authorization: `Bearer ${testToken}` } : {}),
         ...(bodyStr ? { 'Content-Length': Buffer.byteLength(bodyStr) } : {})
       }
     };
@@ -128,6 +134,9 @@ async function runPersistenceSuite() {
 
   console.log(`[Atlas Identity Verified] Host: ${mongoose.connection.host}, DB: ${mongoose.connection.name}`);
   console.log(`[Repository Mode Verified] LIVE MONGODB ATLAS REPOSITORY (Mongoose readyState: 1)`);
+
+  testUser = await User.create({ name: 'Persistence Harness', email: `persistence-${Date.now()}@example.test`, passwordHash: await hashPassword(`fixture-${Date.now()}`) });
+  testToken = issueToken(testUser._id);
 
 
   const server = http.createServer(app);
@@ -271,7 +280,6 @@ async function runPersistenceSuite() {
 
   } finally {
     server.close();
-    await disconnectDB();
   }
 
   // Test 6: Cross-Process Restart Verification
@@ -315,7 +323,7 @@ function runProcessRestartVerification() {
       async function run() {
         const ok = await connectDB();
         if (!ok) process.exit(2);
-        const farm = await farmService.createFarm({
+        const farm = await farmService.createFarm({ ownerId: '${testUser._id}',
           name: 'AgriSense Process Restart Farm',
           location: { state: 'Karnataka', district: 'Kolar', village: 'RestartVillage' },
           soil: { nitrogen: 88, phosphorus: 44, potassium: 44, ph: 6.8 },
@@ -435,7 +443,7 @@ async function runFallbackVerification() {
     farmService.setMemoryMode(true);
     farmService.clearMemoryStore();
 
-    const fallbackFarm = await farmService.createFarm({
+    const fallbackFarm = await farmService.createFarm({ ownerId: testUser ? testUser._id : new mongoose.Types.ObjectId(),
       name: 'Fallback Memory Farm',
       location: { state: 'Punjab', district: 'Ludhiana', village: 'MemoryVillage' },
       soil: { nitrogen: 75, phosphorus: 35, potassium: 35, ph: 7.0 },
@@ -460,6 +468,8 @@ async function runFallbackVerification() {
     console.log(`  [FAIL] Test 7 (FALLBACK): ${e.message}`);
     failed++;
   }
+  if (testUser) await User.deleteOne({ _id: testUser._id });
+  await disconnectDB();
 }
 
 if (require.main === module) {

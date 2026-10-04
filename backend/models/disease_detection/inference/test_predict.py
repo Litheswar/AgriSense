@@ -8,7 +8,10 @@ if hasattr(sys.stdout, "reconfigure"):
 # Suppress TensorFlow verbose GPU/C++ warnings
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
-from predict import predict_disease, DiseaseInferenceError
+try:
+    from .predict import predict_disease, DiseaseInferenceError
+except ImportError:  # Supports direct script execution as well as pytest package collection.
+    from predict import predict_disease, DiseaseInferenceError
 
 def run_tests():
     print("=" * 80)
