@@ -258,6 +258,30 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .dashboard-footnote { display: flex; justify-content: space-between; gap: 14px; margin-top: 20px; color: #969f92; font-size: 8px; }
 .dashboard-footnote span:first-child { display: inline-flex; align-items: center; gap: 6px; }
 .dashboard-footnote svg { color: #809976; }
+.metric-card__value--missing { color: #99a194; font-family: inherit; font-size: 14px; font-weight: 550; }
+.section-heading__link { display: inline-flex; align-items: center; gap: 5px; color: #55764a; font-size: 9px; font-weight: 700; text-underline-offset: 3px; }
+.section-heading__link:hover { color: #294d35; }
+.dashboard-soil { display: grid; grid-template-columns: minmax(150px, .7fr) minmax(0, 2fr); align-items: center; gap: 18px; margin: -10px 0 16px; padding: 15px 17px; border: 1px solid #e8ebdf; border-radius: 13px; background: #fbfcf7; }
+.dashboard-soil h2 { margin: 5px 0 0; color: #344838; font-family: var(--serif); font-size: 18px; font-weight: 500; }
+.dashboard-soil dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.dashboard-soil dl > div { display: flex; min-width: 0; flex-direction: column; gap: 5px; padding-left: 11px; border-left: 1px solid #e6eade; }
+.dashboard-soil dt { color: #849084; font-size: 8px; }
+.dashboard-soil dd { margin: 0; color: #465c48; font-size: 12px; font-variant-numeric: tabular-nums; font-weight: 700; overflow-wrap: anywhere; }
+.dashboard-weather-meta { display: flex; align-items: flex-start; gap: 8px; margin: -3px 0 25px; padding: 10px 12px; border: 1px solid #e8ebdf; border-radius: 10px; color: #7d8a78; background: #fbfcf7; }
+.dashboard-weather-meta > svg { flex: 0 0 auto; margin-top: 1px; color: #809976; }
+.dashboard-weather-meta p { margin: 0; color: #788575; font-size: 9px; line-height: 1.6; overflow-wrap: anywhere; }
+.dashboard-weather-meta a { margin-left: 5px; color: #55764a; font-weight: 700; text-underline-offset: 2px; }
+.dashboard-modules { margin-top: 3px; }
+.dashboard-module-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 11px; }
+.dashboard-module-card { display: flex; min-width: 0; min-height: 162px; flex-direction: column; align-items: flex-start; padding: 14px; border: 1px solid #e7eadf; border-radius: 13px; color: inherit; background: #fffefa; text-decoration: none; transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
+.dashboard-module-card:hover { transform: translateY(-2px); border-color: #cbd8bb; box-shadow: 0 8px 18px #2535260b; }
+.dashboard-module-card:focus-visible { outline: 3px solid #8fac6e; outline-offset: 2px; }
+.dashboard-module-card__icon { display: grid; width: 33px; height: 33px; place-items: center; border-radius: 10px; color: #56744a; background: #edf2e5; }
+.dashboard-module-card__eyebrow { margin-top: 10px; color: #939d8d; font-size: 7px; font-weight: 760; letter-spacing: .8px; }
+.dashboard-module-card h3 { margin: 4px 0 0; color: #3d5140; font-family: var(--serif); font-size: 16px; font-weight: 500; overflow-wrap: anywhere; }
+.dashboard-module-card p { margin: 5px 0 11px; color: #859083; font-size: 9px; line-height: 1.5; }
+.dashboard-module-card__action { display: inline-flex; align-items: center; gap: 5px; margin-top: auto; color: #58764b; font-size: 9px; font-weight: 720; }
+.dashboard-module-card:hover .dashboard-module-card__action { color: #294d35; }
 
 /* Farm list and planned module pages */
 .farms-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
@@ -801,6 +825,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .irrigation-result-stack { grid-template-columns: 1fr 1fr; }
   .fertilizer-results { grid-template-columns: 1fr 1fr; }
   .disease-mode-picker { grid-template-columns: 1fr 1fr; }
+  .dashboard-module-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 860px) {
@@ -808,8 +833,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .auth-visual { padding-right: 30px; padding-left: 34px; }
   .auth-panel { padding-right: 34px; padding-left: 34px; }
   .auth-trust { flex-wrap: wrap; row-gap: 9px; }
-  .app-sidebar { width: 252px; transform: translateX(-102%); transition: transform .25s ease; box-shadow: 14px 0 42px #0a23183d; }
-  .app-sidebar--open { transform: translateX(0); }
+  .app-sidebar { width: 252px; transform: translateX(-102%); visibility: hidden; transition: transform .25s ease, visibility .25s ease; box-shadow: 14px 0 42px #0a23183d; }
+  .app-sidebar--open { transform: translateX(0); visibility: visible; }
   .sidebar-scrim { position: fixed; z-index: 19; inset: 0; display: block; border: 0; background: #10251d6e; backdrop-filter: blur(2px); }
   .sidebar-close, .mobile-menu-button { display: inline-grid; }
   .app-main { margin-left: 0; }
@@ -842,6 +867,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .fertilizer-action-row .button { width: 100%; }
   .fertilizer-action-row > span { text-align: center; }
   .irrigation-decision { min-height: 250px; }
+  .dashboard-module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 660px) {
@@ -856,13 +882,32 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .auth-panel__footer { margin-top: auto; padding-top: 40px; }
   .auth-panel__footer span { text-align: right; }
   .topbar { height: 58px; padding: 0 14px; }
+  .page-header { align-items: flex-start; flex-direction: column; gap: 13px; }
+  .page-header__action { padding: 0; }
+  .farm-hero { min-height: 170px; align-items: flex-start; flex-direction: column; gap: 20px; padding: 22px 18px; }
+  .farm-hero__copy { min-width: 0; }
+  .farm-hero__copy h2 { max-width: 62%; overflow-wrap: anywhere; }
+  .farm-hero__visual { top: 47%; left: auto; right: 6px; width: 130px; height: 130px; transform: translateY(-50%); }
+  .hero-coordinate { right: -4px; bottom: 7px; }
+  .farm-hero__stats { align-self: stretch; justify-content: flex-start; gap: 20px; margin: 0; padding: 10px 0 0; border-top: 1px solid #dbe6d33b; border-left: 0; }
+  .farm-hero__stats > div { min-width: 65px; gap: 4px; }
+  .farm-hero__stats strong { font-size: 17px; }
+  .section-heading { align-items: flex-start; }
+  .section-heading__note { max-width: 120px; text-align: right; }
+  .dashboard-soil { grid-template-columns: 1fr; gap: 12px; }
+  .dashboard-soil dl { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 12px; }
+  .dashboard-soil dl > div:nth-child(odd) { padding-left: 0; border-left: 0; }
+  .dashboard-module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .dashboard-module-card { min-height: 157px; padding: 11px; }
+  .dashboard-module-card h3 { font-size: 15px; }
+  .farm-dialog-backdrop { padding: 10px; }
   .topbar__context, .topbar__actions { gap: 6px; }
   .breadcrumb { gap: 6px; font-size: 9px; }
   .breadcrumb > span:first-child, .breadcrumb__slash { display: none; }
-  .breadcrumb strong { max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .farm-select--compact { min-width: 36px; width: 36px; justify-content: center; padding: 0; border-color: transparent; background: transparent; }
-  .farm-select--compact select { position: absolute; inset: 0; width: 36px; opacity: 0; cursor: pointer; }
-  .farm-select--compact .farm-select__chevron { right: 0; }
+  .breadcrumb strong { max-width: 82px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .farm-select--compact { min-width: 58px; width: min(24vw, 100px); height: 34px; justify-content: flex-start; padding: 0 23px 0 8px; }
+  .farm-select--compact select { position: static; width: 100%; min-width: 0; opacity: 1; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; }
+  .farm-select--compact .farm-select__chevron { right: 6px; pointer-events: none; }
   .topbar-divider, .topbar-profile__copy { display: none; }
   .avatar--topbar { width: 29px; height: 29px; }
   .page-content { min-height: calc(100vh - 58px); padding: 24px 15px 24px; }

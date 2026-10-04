@@ -1,4 +1,5 @@
 import { Leaf, LogOut, PanelLeftClose } from 'lucide-react';
+import { forwardRef } from 'react';
 import { NavLink } from 'react-router';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { Brand } from '../Brand.jsx';
@@ -8,12 +9,12 @@ function initials(name = '') {
   return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'F';
 }
 
-export function AppSidebar({ open, onClose }) {
+export const AppSidebar = forwardRef(function AppSidebar({ open, onClose }, ref) {
   const { user, logout } = useAuth();
   return (
     <>
       {open && <button className="sidebar-scrim" aria-label="Close navigation" onClick={onClose} />}
-      <aside className={`app-sidebar${open ? ' app-sidebar--open' : ''}`} aria-label="Main navigation">
+      <aside ref={ref} id="app-sidebar" className={`app-sidebar${open ? ' app-sidebar--open' : ''}`} aria-label="Main navigation">
         <div className="sidebar-brand-row"><Brand inverse /><button className="icon-button sidebar-close" aria-label="Close navigation" onClick={onClose}><PanelLeftClose size={19} /></button></div>
         <div className="sidebar-organization"><span className="organization-dot" /><span>MY FARM WORKSPACE</span></div>
         <nav className="sidebar-nav">
@@ -39,4 +40,4 @@ export function AppSidebar({ open, onClose }) {
       </aside>
     </>
   );
-}
+});

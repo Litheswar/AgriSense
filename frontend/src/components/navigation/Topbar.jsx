@@ -11,13 +11,13 @@ const titles = {
   '/app/crop-ranking': 'Crop ranking', '/app/evaluation': 'Farm evaluation'
 };
 
-export function Topbar({ onMenu }) {
+export function Topbar({ onMenu, menuOpen, menuButtonRef }) {
   const { pathname } = useLocation();
   const { user } = useAuth();
   return (
     <header className="topbar">
       <div className="topbar__context">
-        <button type="button" className="icon-button mobile-menu-button" aria-label="Open navigation" onClick={onMenu}><Menu size={21} /></button>
+        <button ref={menuButtonRef} type="button" className="icon-button mobile-menu-button" aria-label={menuOpen ? 'Navigation open' : 'Open navigation'} aria-expanded={menuOpen} aria-controls="app-sidebar" onClick={onMenu}><Menu size={21} /></button>
         <div className="breadcrumb"><span>AgriSense</span><span className="breadcrumb__slash">/</span><strong>{titles[pathname] || 'Workspace'}</strong></div>
       </div>
       <div className="topbar__actions">

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { farmsApi } from '../api/farms.js';
 import { useAuth } from './AuthContext.jsx';
+import { reconcileSelectedFarmId } from '../lib/farmSelection.js';
 
 const FarmContext = createContext(null);
 const SELECTED_FARM_KEY = 'agrisense.selected-farm';
@@ -25,13 +26,12 @@ export function FarmProvider({ children }) {
   }, [user?.id, refreshVersion]);
 
   useEffect(() => {
-    if (!farms.length) {
-      setSelectedFarmIdState('');
-      window.sessionStorage.removeItem(SELECTED_FARM_KEY);
-      return;
-    }
-    if (!farms.some((farm) => farm._id === selectedFarmId)) setSelectedFarmId(farms[0]._id);
-  }, [farms, selectedFarmId]);
+    const nextId = reconcileSelectedFarmId({ farms, selectedFarmId, loading, error });
+    if (nextId === selectedFarmId) return;
+    setSelectedFarmIdState(nextId);
+    if (nextId) window.sessionStorage.setItem(SELECTED_FARM_KEY, nextId);
+    else window.sessionStorage.removeItem(SELECTED_FARM_KEY);
+  }, [farms, selectedFarmId, loading, error]);
 
   const setSelectedFarmId = useCallback((farmId) => {
     setSelectedFarmIdState(farmId);

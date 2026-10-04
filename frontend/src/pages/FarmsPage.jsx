@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Check, Eye, MapPin, Pencil, Plus, Sprout, Trash2 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useFarms } from '../context/FarmContext.jsx';
@@ -17,6 +17,38 @@ export function FarmsPage() {
   const [busyDelete, setBusyDelete] = useState(false);
   const [notice, setNotice] = useState('');
   const [pageError, setPageError] = useState('');
+  const formDialogRef = useRef(null);
+  const deleteDialogRef = useRef(null);
+
+  useEffect(() => {
+    const dialog = deletingFarm ? deleteDialogRef.current : formOpen ? formDialogRef.current : null;
+    if (!dialog) return undefined;
+    const previousFocus = document.activeElement;
+    const focusable = () => [...dialog.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]')]
+      .filter((element) => element.getClientRects().length > 0);
+    focusable()[0]?.focus();
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (deletingFarm) { if (!busyDelete) setDeletingFarm(null); }
+        else closeForm();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const items = focusable();
+      if (!items.length) return;
+      if (event.shiftKey && document.activeElement === items[0]) {
+        event.preventDefault(); items.at(-1).focus();
+      } else if (!event.shiftKey && document.activeElement === items.at(-1)) {
+        event.preventDefault(); items[0].focus();
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      previousFocus?.focus?.();
+    };
+  }, [formOpen, deletingFarm, busyDelete]);
 
   useEffect(() => {
     const requestedFarm = location.state?.editFarmId;
@@ -54,9 +86,9 @@ export function FarmsPage() {
       </article>;
     })}</div>}
 
-    {formOpen && <div className="farm-dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) closeForm(); }}><section className="farm-dialog" role="dialog" aria-modal="true" aria-labelledby="farm-dialog-title"><div className="farm-dialog__header"><div><span className="eyebrow">FARM MANAGEMENT</span><h2 id="farm-dialog-title">{formFarm ? 'Edit farm' : 'Add a farm'}</h2></div><button type="button" className="farm-dialog__close" onClick={closeForm} aria-label="Close">×</button></div><FarmForm key={formFarm?._id || 'new'} farm={formFarm} onSubmit={saveFarm} onCancel={closeForm} submitLabel={formFarm ? 'Save changes' : 'Create farm'} /></section></div>}
+    {formOpen && <div className="farm-dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) closeForm(); }}><section ref={formDialogRef} className="farm-dialog" role="dialog" aria-modal="true" aria-labelledby="farm-dialog-title" tabIndex={-1}><div className="farm-dialog__header"><div><span className="eyebrow">FARM MANAGEMENT</span><h2 id="farm-dialog-title">{formFarm ? 'Edit farm' : 'Add a farm'}</h2></div><button type="button" className="farm-dialog__close" onClick={closeForm} aria-label="Close">×</button></div><FarmForm key={formFarm?._id || 'new'} farm={formFarm} onSubmit={saveFarm} onCancel={closeForm} submitLabel={formFarm ? 'Save changes' : 'Create farm'} /></section></div>}
 
-    {deletingFarm && <div className="farm-dialog-backdrop"><section className="farm-confirm" role="alertdialog" aria-modal="true" aria-labelledby="delete-title" aria-describedby="delete-description"><span className="farm-confirm__icon"><Trash2 size={20} /></span><h2 id="delete-title">Delete Farm?</h2><p id="delete-description">This will permanently remove <strong>{deletingFarm.name}</strong>. This action cannot be undone.</p><div className="farm-form__actions"><Button variant="outline" onClick={() => setDeletingFarm(null)} disabled={busyDelete}>Cancel</Button><Button className="button--danger" onClick={confirmDelete} disabled={busyDelete}>{busyDelete ? 'Deleting farm…' : 'Delete Farm'}</Button></div></section></div>}
+    {deletingFarm && <div className="farm-dialog-backdrop"><section ref={deleteDialogRef} className="farm-confirm" role="alertdialog" aria-modal="true" aria-labelledby="delete-title" aria-describedby="delete-description" tabIndex={-1}><span className="farm-confirm__icon"><Trash2 size={20} /></span><h2 id="delete-title">Delete Farm?</h2><p id="delete-description">This will permanently remove <strong>{deletingFarm.name}</strong>. This action cannot be undone.</p><div className="farm-form__actions"><Button variant="outline" onClick={() => setDeletingFarm(null)} disabled={busyDelete}>Cancel</Button><Button className="button--danger" onClick={confirmDelete} disabled={busyDelete}>{busyDelete ? 'Deleting farm…' : 'Delete Farm'}</Button></div></section></div>}
     <div className="page-note"><span className="page-note__icon"><Sprout size={17} /></span><p><strong>Farm records are protected.</strong> Farm data is loaded and changed through your authenticated account. The server determines ownership for every operation.</p></div>
   </div>;
 }
