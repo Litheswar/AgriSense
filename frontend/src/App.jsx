@@ -12,6 +12,7 @@ import { DiseaseDetectionPage } from './pages/DiseaseDetectionPage.jsx';
 import { DiseaseRiskPage } from './pages/DiseaseRiskPage.jsx';
 import { WeatherPage } from './pages/WeatherPage.jsx';
 import { CropRankingPage } from './pages/CropRankingPage.jsx';
+import { MarketPage } from './pages/MarketPage.jsx';
 import { AuthPage } from './pages/AuthPage.jsx';
 import { PlaceholderPage } from './pages/PlaceholderPage.jsx';
 import { LoadingState } from './components/ui/Feedback.jsx';
@@ -23,7 +24,6 @@ function HomeRedirect() {
 }
 
 const placeholders = [
-  ['market', 'Market intelligence', 'Review crop market context and price signals.'],
   ['evaluation', 'Farm evaluation', 'Bring farm recommendations together in one assessment.']
 ];
 
@@ -47,6 +47,7 @@ function AppRoutes() {
         <Route path="disease-risk" element={<DiseaseRiskPage />} />
         <Route path="weather" element={<WeatherPage />} />
         <Route path="crop-ranking" element={<CropRankingPage />} />
+        <Route path="market" element={<MarketPage />} />
         {placeholders.map(([path, title, description]) => (
           <Route key={path} path={path} element={<PlaceholderPage title={title} description={description} />} />
         ))}
