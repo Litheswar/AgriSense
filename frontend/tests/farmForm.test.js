@@ -36,3 +36,38 @@ test('maps a server farm into editable values', () => {
   assert.equal(values.ph, 6.5);
   assert.equal(values.longitude, '');
 });
+
+test('new farms keep optional measurements blank and preserve real zeroes', () => {
+  const values = farmToFormValues();
+  assert.equal(values.nitrogen, '');
+  assert.equal(values.phosphorus, '');
+  assert.equal(values.potassium, '');
+  assert.equal(values.ph, '');
+  assert.equal(values.soilMoisture, '');
+  const payload = farmValuesToPayload({ ...valid, nitrogen: '', phosphorus: '', potassium: '', ph: '', soilMoisture: '' });
+  assert.equal(payload.soil.nitrogen, null);
+  assert.equal(payload.soil.ph, null);
+  assert.equal(payload.fieldConditions.soilMoisture, null);
+  const zeroPayload = farmValuesToPayload({ ...valid, nitrogen: '0', phosphorus: '0', potassium: '0', ph: '0', soilMoisture: '0' });
+  assert.equal(zeroPayload.soil.nitrogen, 0);
+  assert.equal(zeroPayload.soil.ph, 0);
+  assert.equal(zeroPayload.fieldConditions.soilMoisture, 0);
+});
+
+test('unknown existing measurements render blank while recorded values remain numeric', () => {
+  const values = farmToFormValues({ soil: { nitrogen: null, phosphorus: undefined, potassium: 30, ph: 6.5 }, fieldConditions: { soilMoisture: null } });
+  assert.equal(values.nitrogen, '');
+  assert.equal(values.phosphorus, '');
+  assert.equal(values.potassium, 30);
+  assert.equal(values.ph, 6.5);
+  assert.equal(values.soilMoisture, '');
+});
+
+test('optional measurements remain optional while invalid ranges are rejected', () => {
+  const blank = { ...valid, nitrogen: '', phosphorus: '', potassium: '', ph: '', soilMoisture: '' };
+  assert.deepEqual(validateFarmValues(blank), {});
+  assert.ok(validateFarmValues({ ...blank, ph: '-0.1' }).ph);
+  assert.ok(validateFarmValues({ ...blank, ph: '14.1' }).ph);
+  assert.ok(validateFarmValues({ ...blank, soilMoisture: '-1' }).soilMoisture);
+  assert.ok(validateFarmValues({ ...blank, soilMoisture: '100.1' }).soilMoisture);
+});

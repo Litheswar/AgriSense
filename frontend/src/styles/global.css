@@ -313,6 +313,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .farm-form__section { padding: 18px 0; border-bottom: 1px solid #eceee5; }
 .farm-form__section h3 { margin: 0; color: #435645; font-size: 14px; }
 .farm-form__section > p { margin: 5px 0 15px; color: #8a9588; font-size: 11px; }
+.farm-form__optional { margin-top: -6px !important; color: #536455 !important; font-weight: 600; }
+.farm-form__notice { display: grid; gap: 4px; margin: 0 0 14px; padding: 11px 12px; border: 1px solid #dce7d5; border-radius: 10px; color: #435645; background: #f5f8f0; font-size: 11px; line-height: 1.45; }
+.farm-form__notice span { color: #687568; font-weight: 450; }
 .farm-form__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .farm-form__field { display: flex; min-width: 0; flex-direction: column; gap: 6px; margin: 0 0 12px; color: #536455; font-size: 11px; font-weight: 650; }
 .farm-form__field > span i { color: #a4563b; font-style: normal; }
