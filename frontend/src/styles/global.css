@@ -448,6 +448,94 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .disease-risk-disclaimer svg, .disease-risk-prototype-note svg { flex: 0 0 auto; }
 .disease-risk-disclaimer p, .disease-risk-prototype-note { margin: 0; color: #887c65; font-size: 10px; line-height: 1.6; }
 .disease-risk-prototype-note { margin-top: 13px; color: #627361; border-color: #e8ebdf; background: #fafbf5; }
+.crop-ranking-page { width: 100%; max-width: 1080px; margin: 0 auto; }
+.ranking-farm-context, .ranking-results__intro, .ranking-list-panel { border: 1px solid #e5e9dd; border-radius: 15px; background: #fffefa; box-shadow: 0 5px 18px #26392e08; }
+.ranking-farm-context { display: flex; align-items: center; gap: 13px; padding: 17px 19px; }
+.ranking-farm-context__icon { display: grid; width: 39px; height: 39px; flex: 0 0 39px; place-items: center; border-radius: 12px; color: #56734c; background: #edf2e3; }
+.ranking-farm-context__copy { min-width: 0; }
+.ranking-farm-context__copy h2 { margin: 3px 0 4px; color: #344838; font-family: var(--serif); font-size: 21px; font-weight: 500; overflow-wrap: anywhere; }
+.ranking-farm-context__copy p { display: flex; align-items: center; gap: 5px; margin: 0; color: #859083; font-size: 10px; }
+.ranking-farm-context__active { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; padding: 6px 9px; border-radius: 999px; color: #587546; background: #eff4e5; font-size: 8px; font-weight: 780; letter-spacing: .8px; white-space: nowrap; }
+.ranking-method-note { display: flex; align-items: flex-start; gap: 10px; margin-top: 13px; padding: 12px 14px; border: 1px solid #e8ebdf; border-radius: 11px; background: #fafbf5; }
+.ranking-method-note > svg { flex: 0 0 auto; margin-top: 2px; color: #657c56; }
+.ranking-method-note p { margin: 0; color: #7f8c7d; font-size: 10px; line-height: 1.6; }
+.ranking-method-note strong { color: #536c47; }
+.ranking-method-note a { color: #547749; font-weight: 700; text-underline-offset: 2px; }
+.ranking-action { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 17px 0; }
+.ranking-action .button { min-width: 190px; }
+.ranking-action > span { color: #8b9689; font-size: 10px; }
+.ranking-loading { margin-bottom: 16px; padding: 8px 16px 12px; border: 1px solid #e5e9dd; border-radius: 13px; background: #fbfcf7; }
+.ranking-loading .loading-state { min-height: 54px; color: #527047; }
+.ranking-loading > p { margin: 0; color: #8a9588; font-size: 10px; line-height: 1.5; text-align: center; }
+.ranking-error { margin-bottom: 16px; }
+.ranking-missing { display: flex; gap: 13px; margin-bottom: 16px; padding: 17px; border: 1px solid #ead9c8; border-radius: 13px; color: #8a7447; background: #fffaf3; }
+.ranking-missing > svg { flex: 0 0 auto; margin-top: 3px; }
+.ranking-missing h2 { margin: 0 0 5px; color: #5d4c32; font-family: var(--serif); font-size: 20px; font-weight: 500; }
+.ranking-missing p { margin: 0; color: #887d68; font-size: 11px; line-height: 1.6; }
+.ranking-missing ul { display: flex; flex-wrap: wrap; gap: 7px 20px; margin: 10px 0 14px; padding-left: 18px; color: #65583f; font-size: 11px; }
+.ranking-missing .button { min-height: 36px; font-size: 11px; }
+.ranking-results { display: grid; gap: 13px; }
+.ranking-results__intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 17px 19px; }
+.ranking-results__intro h2 { margin: 4px 0 0; color: #344838; font-family: var(--serif); font-size: 22px; font-weight: 500; overflow-wrap: anywhere; }
+.ranking-weights { color: #879286; font-size: 9px; text-align: right; }
+.ranking-provenance-warning { display: flex; align-items: flex-start; gap: 9px; padding: 12px 14px; border: 1px solid #eadfc7; border-radius: 11px; color: #9a7947; background: #fffaf0; }
+.ranking-provenance-warning > svg { flex: 0 0 auto; margin-top: 1px; }
+.ranking-provenance-warning p { margin: 0; color: #806d4e; font-size: 10px; line-height: 1.6; }
+.ranking-provenance-warning--local { border-color: #e5d3b0; background: #fcf5e8; }
+.ranking-best { overflow: hidden; padding: 19px; border: 1px solid #315c3d; border-radius: 16px; color: #eff3e8; background: linear-gradient(120deg, #204c33 0%, #315f3d 63%, #507345 100%); box-shadow: 0 12px 27px #204b321c; }
+.ranking-best__heading { display: flex; align-items: center; gap: 11px; padding-bottom: 15px; border-bottom: 1px solid #e1ebd13a; }
+.ranking-best__icon { display: grid; width: 38px; height: 38px; flex: 0 0 38px; place-items: center; border-radius: 11px; color: #e0e8ae; background: #eff3ce18; }
+.ranking-best__heading .eyebrow { color: #c1d0b1; }
+.ranking-best__heading h2 { margin: 4px 0 0; color: #fffef1; font-family: var(--serif); font-size: 27px; font-weight: 500; overflow-wrap: anywhere; }
+.ranking-best__rank { margin-left: auto; padding: 6px 9px; border: 1px solid #dce7cf45; border-radius: 999px; color: #e3ebd4; font-size: 10px; font-weight: 750; white-space: nowrap; }
+.ranking-signals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 13px 0 0; }
+.ranking-signals > div { display: flex; min-width: 0; flex-direction: column; gap: 6px; padding: 10px 11px; border: 1px solid #edf0e7; border-radius: 9px; background: #fbfcf7; }
+.ranking-signals dt { color: #82907e; font-size: 8px; line-height: 1.35; }
+.ranking-signals dd { margin: 0; color: #3e5540; font-size: 15px; font-variant-numeric: tabular-nums; font-weight: 750; overflow-wrap: anywhere; }
+.ranking-best .ranking-signals > div { border-color: #e1ebd12a; background: #eaf1df10; }
+.ranking-best .ranking-signals dt { color: #c1d0b1; }
+.ranking-best .ranking-signals dd { color: #f7f6e6; }
+.ranking-no-signals { margin: 12px 0 0; color: #869383; font-size: 10px; }
+.ranking-best .ranking-no-signals { color: #c1d0b1; }
+.ranking-market-detail { margin-top: 11px; padding: 11px 12px; border: 1px solid #e7ebdf; border-radius: 10px; background: #fafbf6; }
+.ranking-best .ranking-market-detail { border-color: #e1ebd13a; background: #eaf1df10; }
+.ranking-market-detail__heading { display: flex; align-items: center; justify-content: space-between; gap: 9px; }
+.ranking-market-detail__heading > span:first-child { display: inline-flex; align-items: center; gap: 6px; color: #677a61; font-size: 9px; font-weight: 750; }
+.ranking-best .ranking-market-detail__heading > span:first-child { color: #d3dfc6; }
+.ranking-market-source { color: #68766a; font-size: 8px; font-weight: 750; text-align: right; }
+.ranking-market-source--local-fallback { color: #8a6941; }
+.ranking-market-source--government-live { color: #4e7047; }
+.ranking-best .ranking-market-source { color: #e5edd9; }
+.ranking-best .ranking-market-source--local-fallback { color: #f3dba9; }
+.ranking-market-status, .ranking-market-price { margin: 7px 0 0; color: #7d8979; font-size: 9px; line-height: 1.5; overflow-wrap: anywhere; }
+.ranking-market-price strong { color: #4e604b; font-variant-numeric: tabular-nums; }
+.ranking-market-price span { color: #8b9589; }
+.ranking-best .ranking-market-status, .ranking-best .ranking-market-price { color: #cad8c0; }
+.ranking-best .ranking-market-price strong { color: #fff5d9; }
+.ranking-best .ranking-market-price span { color: #d0dac6; }
+.ranking-explanation { display: flex; align-items: flex-start; gap: 7px; margin: 10px 0 0; color: #829081; font-size: 9px; line-height: 1.55; }
+.ranking-explanation > svg { flex: 0 0 auto; margin-top: 1px; }
+.ranking-best .ranking-explanation { color: #c1d0b1; }
+.ranking-best .ranking-explanation > svg { color: #cfdaa4; }
+.ranking-list-panel { padding: 18px; }
+.ranking-list-panel__heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 11px; padding-bottom: 12px; border-bottom: 1px solid #edf0e7; }
+.ranking-list-panel__heading h2 { margin: 5px 0 0; color: #344838; font-family: var(--serif); font-size: 20px; font-weight: 500; }
+.ranking-list-panel__heading > span { color: #919b8f; font-size: 8px; text-align: right; }
+.ranking-candidate-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 13px; }
+.ranking-candidate { min-width: 0; padding: 13px; border: 1px solid #e9ede3; border-radius: 12px; background: #fffefa; }
+.ranking-candidate__header { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.ranking-candidate__rank { display: grid; width: 32px; height: 32px; flex: 0 0 32px; place-items: center; border: 1px solid #e0e8d7; border-radius: 10px; color: #557248; background: #eff4e7; font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.ranking-candidate__identity { min-width: 0; }
+.ranking-candidate__identity .eyebrow { color: #899584; font-size: 7px; }
+.ranking-candidate__identity h3 { margin: 3px 0 0; color: #3f5341; font-family: var(--serif); font-size: 18px; font-weight: 500; overflow-wrap: anywhere; }
+.ranking-best-label { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; color: #536e47; font-size: 7px; font-weight: 800; letter-spacing: .6px; }
+.ranking-candidate .ranking-signals { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ranking-candidate .ranking-signals > div { padding: 8px; }
+.ranking-candidate .ranking-signals dd { font-size: 12px; }
+.ranking-empty-copy { margin: 14px 0 0; color: #879286; font-size: 11px; }
+.ranking-disclaimer { display: flex; align-items: flex-start; gap: 9px; padding: 12px 14px; border: 1px solid #e8ebdf; border-radius: 11px; color: #72816d; background: #fafbf5; }
+.ranking-disclaimer > svg { flex: 0 0 auto; margin-top: 1px; }
+.ranking-disclaimer p { margin: 0; color: #7f8c7d; font-size: 10px; line-height: 1.6; }
 .weather-page { width: 100%; max-width: 1080px; margin: 0 auto; }
 .weather-farm-context, .weather-status-panel, .weather-data-panel { border: 1px solid #e5e9dd; border-radius: 15px; background: #fffefa; box-shadow: 0 5px 18px #26392e08; }
 .weather-farm-context { display: flex; align-items: center; gap: 13px; padding: 17px 19px; }
@@ -744,6 +832,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .weather-actions { align-items: stretch; flex-direction: column; }
   .weather-actions .button { width: 100%; }
   .weather-actions > span { text-align: center; }
+  .ranking-candidate-list { grid-template-columns: 1fr; }
   .disease-mode-picker { grid-template-columns: 1fr; }
   .disease-action-row { align-items: stretch; flex-direction: column; }
   .disease-action-row .button { width: 100%; }
@@ -778,6 +867,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .avatar--topbar { width: 29px; height: 29px; }
   .page-content { min-height: calc(100vh - 58px); padding: 24px 15px 24px; }
   .weather-farm-context { align-items: flex-start; flex-wrap: wrap; padding: 14px; }
+  .ranking-farm-context { align-items: flex-start; flex-wrap: wrap; padding: 14px; }
+  .ranking-results__intro { align-items: flex-start; flex-direction: column; padding: 14px; }
+  .ranking-weights { text-align: left; }
+  .ranking-best { padding: 15px; }
+  .ranking-best__heading { align-items: flex-start; flex-wrap: wrap; }
+  .ranking-best__heading h2 { font-size: 23px; }
+  .ranking-best__rank { margin-left: 50px; }
+  .ranking-list-panel { padding: 14px; }
+  .ranking-list-panel__heading { align-items: flex-start; flex-direction: column; gap: 5px; }
+  .ranking-list-panel__heading > span { text-align: left; }
+  .ranking-market-detail__heading { align-items: flex-start; flex-direction: column; }
+  .ranking-market-source { text-align: left; }
+  .ranking-signals { grid-template-columns: 1fr 1fr; }
   .weather-farm-context__active { margin-left: auto; }
   .weather-status-panel, .weather-data-panel { padding: 14px; }
   .weather-status-panel__heading, .weather-data-panel__heading { align-items: flex-start; flex-direction: column; gap: 7px; }
@@ -850,6 +952,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .fertilizer-farm-panel, .fertilizer-status-panel, .fertilizer-reasoning-panel { padding: 13px; }
   .disease-risk-panel { padding: 12px; }
   .weather-status-panel, .weather-data-panel { padding: 12px; }
+  .ranking-best { padding: 12px; }
+  .ranking-candidate { padding: 11px; }
+  .ranking-candidate .ranking-signals { grid-template-columns: 1fr 1fr; }
   .weather-metric { padding: 8px; }
   .weather-metric__copy > span { font-size: 8px; }
   .weather-metric__copy > strong { font-size: 16px; }

@@ -216,6 +216,8 @@ class CropRankingEngine:
                 market_signal = round(market_score_100 / 100.0, 4)
                 market_trend = market_res.get("trend", "Unavailable")
                 current_price = market_res.get("current_price")
+                market_source = market_res.get("raw_source")
+                market_record_date = market_res.get("latest_date")
                 price_range = market_res.get("price_range") or {}
                 price_unit = price_range.get("unit", "INR/Quintal")
                 market_data_available = True
@@ -236,6 +238,8 @@ class CropRankingEngine:
                 market_signal = None
                 market_trend = "Unavailable"
                 current_price = None
+                market_source = None
+                market_record_date = None
                 price_unit = None
                 market_data_available = False
 
@@ -255,6 +259,8 @@ class CropRankingEngine:
                 "market_trend": market_trend,
                 "current_price": current_price,
                 "price_unit": price_unit,
+                "market_source": market_source,
+                "market_record_date": market_record_date,
                 "explanation": explanation
             })
 

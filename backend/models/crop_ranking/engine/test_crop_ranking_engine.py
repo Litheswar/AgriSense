@@ -39,7 +39,7 @@ from backend.models.crop_recommendation.inference.predict import CropRecommender
 def test_suite():
     passed = 0
     failed = 0
-    total = 12
+    total = 13
 
     print("=" * 80)
     print("AGRISENSE CROP RANKING ENGINE — UNIT & INTEGRATION TEST SUITE (MILESTONE 16)")
@@ -78,6 +78,8 @@ def test_suite():
         assert res["ranked_crops"][0]["rank"] == 1
         # Tomato: 0.7*0.60 + 0.3*0.75 = 0.42 + 0.225 = 0.6450
         assert res["ranked_crops"][0]["combined_score"] == 0.6450
+        assert res["ranked_crops"][0]["market_source"] == "local-fallback"
+        assert res["ranked_crops"][0]["market_record_date"] == "2026-09-10"
         print("  [PASS] Test 1: Normal ranking evaluated multi-criteria candidates successfully.")
         passed += 1
     except Exception as e:
@@ -307,6 +309,37 @@ def test_suite():
         passed += 1
     except Exception as e:
         print(f"  [FAIL] Test 12: {e}")
+        failed += 1
+
+    # Test 13: Provider provenance is carried through for live records and absent when no market data exists.
+    try:
+        class LiveSourceMarketEngine:
+            def analyze_market(self, crop, market=None, state=None):
+                return {
+                    "data_available": True,
+                    "market_score": 72.5,
+                    "trend": "Increasing",
+                    "current_price": 1250,
+                    "price_range": {"unit": "INR/Quintal"},
+                    "raw_source": "data.gov.in (live)",
+                    "latest_date": "2026-09-30"
+                }
+
+        live = CropRankingEngine(market_engine=LiveSourceMarketEngine()).rank_candidates(
+            [{"crop": "Tomato", "probability": 0.8}],
+            market_context={"market": "Kolar", "state": "Karnataka"}
+        )["ranked_crops"][0]
+        assert live["market_source"] == "data.gov.in (live)"
+        assert live["market_record_date"] == "2026-09-30"
+
+        unavailable = CropRankingEngine().rank_candidates([{"crop": "Tomato", "probability": 0.8}])["ranked_crops"][0]
+        assert unavailable["market_data_available"] is False
+        assert unavailable["market_source"] is None
+        assert unavailable["market_record_date"] is None
+        print("  [PASS] Test 13: Live market provenance/date preserved; unavailable market data is not mislabeled.")
+        passed += 1
+    except Exception as e:
+        print(f"  [FAIL] Test 13: {e}")
         failed += 1
 
     print("=" * 80)
