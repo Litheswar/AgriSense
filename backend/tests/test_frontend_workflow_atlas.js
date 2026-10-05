@@ -48,7 +48,6 @@ async function main() {
       soil: { nitrogen: 90, phosphorus: 45, potassium: 45, ph: 6.8 },
       crop: { name: 'Tomato', growthStage: 'vegetative' },
       fieldConditions: { soilMoisture: 30 },
-      weather: { temperature: 28, humidity: 65, rainfall: 15, recentRainfall: 5, rainProbability: 10, expectedRainfall: 0 },
       diseaseContext: { detected: false, disease: null, confidence: 0 },
       marketContext: { market: 'Coimbatore', state: 'Tamil Nadu', district: 'Coimbatore' }
     });

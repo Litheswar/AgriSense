@@ -116,7 +116,10 @@ async function main() {
     for (const [service, method] of originalFarmServiceMethods) {
       service[method] = async (...args) => ({ success: true, farmId: String(args[0]), sharedFarmState: args[1] || null });
     }
-    for (const suffix of ['crop-recommendation', 'irrigation', 'fertilizer', 'disease-risk', 'market', 'crop-ranking', 'evaluation']) {
+    const cropWithoutCoordinates = await request(base, 'GET', `/api/farms/${farmAId}/crop-recommendation`, undefined, registerA.body.token);
+    assert.equal(cropWithoutCoordinates.status, 503, 'crop recommendation without Farm coordinates must report unavailable weather');
+    assert.equal(cropWithoutCoordinates.body.error.code, 'WEATHER_DATA_UNAVAILABLE');
+    for (const suffix of ['irrigation', 'fertilizer', 'disease-risk', 'market', 'crop-ranking', 'evaluation']) {
       assert.equal((await request(base, 'GET', `/api/farms/${farmAId}/${suffix}`, undefined, registerA.body.token)).status, 200, `owner GET ${suffix}`);
     }
     assert.equal((await request(base, 'POST', `/api/farms/${farmAId}/weather/refresh`, {}, registerA.body.token)).status, 200, 'owner weather refresh');

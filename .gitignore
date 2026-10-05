@@ -38,6 +38,10 @@ build/
 .env.local
 .env.*.local
 
+# Local development account store (contains password hashes)
+backend/data/auth-users.json
+backend/data/auth-users.json.*.tmp
+
 # Temporary disease inference uploads
 backend/tmp/disease/
 

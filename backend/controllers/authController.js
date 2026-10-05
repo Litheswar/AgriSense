@@ -1,6 +1,7 @@
-const User = require('../db/models/User');
+const authUserService = require('../services/authUserService');
 const { hashPassword, verifyPassword } = require('../services/passwordService');
 const { issueToken, assertConfigured } = require('../services/authTokenService');
+const { getConnectionStatus } = require('../config/db');
 
 const PASSWORD_MIN_LENGTH = 8;
 function safeUser(user) {
@@ -9,6 +10,7 @@ function safeUser(user) {
 function authError(res, status, code, message) {
   return res.status(status).json({ success: false, error: { code, message } });
 }
+function authDatabaseReady() { return getConnectionStatus(); }
 function normalizeEmail(email) {
   return typeof email === 'string' ? email.trim().toLowerCase() : '';
 }
@@ -23,7 +25,10 @@ exports.register = async (req, res) => {
   }
   try {
     assertConfigured();
-    const user = await User.create({ name, email, passwordHash: await hashPassword(password) });
+    if (!(await authDatabaseReady()) && process.env.NODE_ENV === 'production') {
+      return authError(res, 503, 'AUTH_DATABASE_UNAVAILABLE', 'Account services are temporarily unavailable. Please try again shortly.');
+    }
+    const user = await authUserService.createUser({ name, email, passwordHash: await hashPassword(password) });
     const token = issueToken(user._id);
     return res.status(201).json({ success: true, user: safeUser(user), token });
   } catch (error) {
@@ -42,7 +47,10 @@ exports.login = async (req, res) => {
   }
   try {
     assertConfigured();
-    const user = await User.findOne({ email }).select('+passwordHash');
+    if (!(await authDatabaseReady()) && process.env.NODE_ENV === 'production') {
+      return authError(res, 503, 'AUTH_DATABASE_UNAVAILABLE', 'Account services are temporarily unavailable. Please try again shortly.');
+    }
+    const user = await authUserService.findByEmail(email);
     const valid = await verifyPassword(password, user && user.passwordHash);
     if (!user || !valid) return authError(res, 401, 'INVALID_CREDENTIALS', 'Email or password is incorrect.');
     return res.status(200).json({ success: true, user: safeUser(user), token: issueToken(user._id) });

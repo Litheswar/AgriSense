@@ -28,6 +28,18 @@ if PROJECT_ROOT not in sys.path:
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
+def log_ai_verify(task: str, model_info: str, input_summary: Any, result_summary: Any):
+    try:
+        from datetime import datetime, timezone
+        ts = datetime.now(timezone.utc).isoformat()
+        log_line = f"[{ts}] [AI VERIFY] Task: {task} | Model/Engine: {model_info} | Input: {input_summary} | Result: {result_summary}\n"
+        log_path = os.path.join(PROJECT_ROOT, ".runlogs", "ai_verification.log")
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(log_line)
+        sys.stderr.write(log_line)
+    except Exception:
+        pass
+
 # Lazy-loaded singletons for memory and startup efficiency
 _crop_recommender = None
 _disease_detector = None
@@ -166,6 +178,12 @@ def dispatch_ai_task(task: str, payload: Optional[Dict[str, Any]] = None) -> Dic
         elif task_clean == "crop_recommendation":
             recommender = get_crop_recommender()
             result = recommender.predict(input_data)
+            log_ai_verify(
+                "crop_recommendation",
+                "RandomForestClassifier (joblib)",
+                input_data,
+                f"predicted={result.get('predicted_crop')}, conf={result.get('confidence')}, top_3={result.get('top_3')}"
+            )
             return {
                 "success": True,
                 "task": task_clean,
@@ -185,6 +203,12 @@ def dispatch_ai_task(task: str, payload: Optional[Dict[str, Any]] = None) -> Dic
                 }
             detector = get_disease_detector()
             result = detector.predict(image_path)
+            log_ai_verify(
+                "disease_detection",
+                "MobileNetV2 / Keras 3 CNN",
+                f"image_path={image_path}",
+                f"crop={result.get('crop')}, disease={result.get('predicted_disease')}, conf={result.get('confidence')}, canonical={result.get('canonical_name')}"
+            )
             return {
                 "success": True,
                 "task": task_clean,
@@ -195,6 +219,12 @@ def dispatch_ai_task(task: str, payload: Optional[Dict[str, Any]] = None) -> Dic
         elif task_clean == "irrigation":
             engine = get_irrigation_engine()
             result = engine.get_recommendation(input_data)
+            log_ai_verify(
+                "irrigation",
+                "Rule-Based Threshold Engine",
+                input_data,
+                f"irrigation_required={result.get('irrigation_required')}, urgency={result.get('urgency')}, reason={result.get('reason')}"
+            )
             return {
                 "success": True,
                 "task": task_clean,
@@ -205,6 +235,12 @@ def dispatch_ai_task(task: str, payload: Optional[Dict[str, Any]] = None) -> Dic
         elif task_clean == "fertilizer":
             engine = get_fertilizer_engine()
             result = engine.get_recommendation(input_data)
+            log_ai_verify(
+                "fertilizer",
+                "Rule-Based Nutrient Engine",
+                input_data,
+                f"priorities={result.get('priority_nutrients')}, recommendation={result.get('recommendation')}"
+            )
             return {
                 "success": True,
                 "task": task_clean,
@@ -215,6 +251,12 @@ def dispatch_ai_task(task: str, payload: Optional[Dict[str, Any]] = None) -> Dic
         elif task_clean == "disease_risk":
             engine = get_disease_risk_engine()
             result = engine.get_risk_assessment(input_data)
+            log_ai_verify(
+                "disease_risk",
+                "Rule-Based Environmental Risk Engine",
+                input_data,
+                f"risk_level={result.get('risk_level')}, score={result.get('risk_score')}, signals={result.get('signals')}"
+            )
             return {
                 "success": True,
                 "task": task_clean,
@@ -236,6 +278,12 @@ def dispatch_ai_task(task: str, payload: Optional[Dict[str, Any]] = None) -> Dic
                 }
             engine = get_market_engine()
             result = engine.analyze_market(crop=crop, market=market, state=state)
+            log_ai_verify(
+                "market",
+                "Deterministic Trend Analysis Engine",
+                f"crop={crop}, market={market}, state={state}",
+                f"status={result.get('status')}, price={result.get('current_price')}, trend={result.get('trend')}, score={result.get('market_score')}"
+            )
             return {
                 "success": True,
                 "task": task_clean,
@@ -274,6 +322,13 @@ def dispatch_ai_task(task: str, payload: Optional[Dict[str, Any]] = None) -> Dic
                     }
                 }
 
+            top_crop = result.get('ranked_crops', [{}])[0].get('crop') if result.get('ranked_crops') else None
+            log_ai_verify(
+                "crop_ranking",
+                "Multi-Criteria Scoring Engine",
+                f"candidates_count={len(result.get('ranked_crops', []))}",
+                f"top_crop={top_crop}, count={len(result.get('ranked_crops', []))}"
+            )
             return {
                 "success": True,
                 "task": task_clean,

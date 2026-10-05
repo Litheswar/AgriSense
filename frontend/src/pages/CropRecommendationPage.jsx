@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, BarChart3, Check, CloudRain, Droplets, Leaf, MapPin, Pencil, Sprout, Thermometer, Wind } from 'lucide-react';
 import { Link } from 'react-router';
 import { cropRecommendationApi } from '../api/cropRecommendation.js';
+import { weatherApi } from '../api/weather.js';
 import { useFarms } from '../context/FarmContext.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { EmptyState, ErrorState, LoadingState } from '../components/ui/Feedback.jsx';
@@ -49,11 +50,29 @@ export function CropRecommendationPage() {
     setResult(null);
     try {
       const response = await cropRecommendationApi.get(requestedFarmId);
-      if (requestTracker.current.isCurrent(sequence, requestedFarmId)) setResult(response);
+      if (requestTracker.current.isCurrent(sequence, requestedFarmId)) {
+        setResult(response);
+        refreshFarms();
+      }
     } catch (requestError) {
       if (requestTracker.current.isCurrent(sequence, requestedFarmId)) setError({ farmId: requestedFarmId, cause: requestError });
     } finally {
       if (requestTracker.current.finish(sequence, requestedFarmId)) setLoading(false);
+    }
+  }
+
+  async function retryWeatherAndRecommend() {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    try {
+      await weatherApi.refresh(selectedFarmId);
+      refreshFarms();
+      await requestRecommendation();
+    } catch (requestError) {
+      setError({ farmId: selectedFarmId, cause: requestError });
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -90,7 +109,8 @@ export function CropRecommendationPage() {
 
     <div className="crop-action-row"><Button onClick={requestRecommendation} disabled={loading || !selectedFarmId}><Sprout size={16} />{loading ? 'Analyzing farm data…' : showResult ? 'Get New Recommendation' : 'Get Recommendation'}</Button>{!loading && !showResult && <span>Uses the selected farm’s saved soil and weather values.</span>}</div>
     {loading && <div className="crop-loading-panel"><LoadingState label="Analyzing your farm data…" /><p>The recommendation is based on the selected farm’s recorded conditions.</p></div>}
-    {activeError && missingFields.length > 0 && <section className="crop-missing-panel" role="alert"><div className="crop-message-icon"><BarChart3 size={18} /></div><div className="crop-message-content"><h2>More farm information is required</h2><p>Add the following recorded values before requesting a recommendation:</p><ul>{missingFields.map((field, index) => <li key={`${field}-${index}`}>{labelMissingField(field)}</li>)}</ul><Link className="button button--outline" to={`/app/farms/${encodeURIComponent(selectedFarmId)}`}><Pencil size={15} /> Edit Farm</Link></div></section>}
+    {activeError?.code === 'WEATHER_DATA_UNAVAILABLE' && <section className="crop-missing-panel" role="alert"><div className="crop-message-icon"><CloudRain size={18} /></div><div className="crop-message-content"><h2>Weather data unavailable</h2><p>Crop recommendation requires current weather information from this farm’s coordinates. {activeError.payload?.error?.weatherNeedsCoordinates ? 'Add the farm coordinates to retrieve weather automatically.' : 'Please try refreshing weather.'}</p>{activeError.payload?.error?.weatherNeedsCoordinates ? <Link className="button button--outline" to={`/app/farms/${encodeURIComponent(selectedFarmId)}`}><Pencil size={15} /> Add farm coordinates</Link> : <Button variant="outline" onClick={retryWeatherAndRecommend} disabled={loading}><CloudRain size={15} /> Retry Weather</Button>}</div></section>}
+    {activeError && activeError.code !== 'WEATHER_DATA_UNAVAILABLE' && missingFields.length > 0 && <section className="crop-missing-panel" role="alert"><div className="crop-message-icon"><BarChart3 size={18} /></div><div className="crop-message-content"><h2>More farm information is required</h2><p>Add the following recorded values before requesting a recommendation:</p><ul>{missingFields.map((field, index) => <li key={`${field}-${index}`}>{labelMissingField(field)}</li>)}</ul><Link className="button button--outline" to={`/app/farms/${encodeURIComponent(selectedFarmId)}`}><Pencil size={15} /> Edit Farm</Link></div></section>}
     {activeError && missingFields.length === 0 && <div className="crop-error-panel"><ErrorState title={activeError.status === 503 || activeError.code === 'TIMEOUT' ? 'Recommendation service unavailable' : activeError.status === 404 ? 'Farm unavailable' : 'Recommendation could not be loaded'} message={recommendationErrorMessage(activeError)} onRetry={requestRecommendation} /></div>}
 
     {showResult && <div className="crop-result-stack" aria-live="polite">

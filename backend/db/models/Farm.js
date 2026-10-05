@@ -30,13 +30,15 @@ const LocationSchema = new Schema({
     type: Number,
     min: [-90, 'Latitude must be >= -90'],
     max: [90, 'Latitude must be <= 90'],
-    default: null
+    default: null,
+    validate: { validator(value) { return (value === null && this.longitude === null) || (value !== null && this.longitude !== null); }, message: 'Enter both latitude and longitude, or leave both blank.' }
   },
   longitude: {
     type: Number,
     min: [-180, 'Longitude must be >= -180'],
     max: [180, 'Longitude must be <= 180'],
-    default: null
+    default: null,
+    validate: { validator(value) { return (value === null && this.latitude === null) || (value !== null && this.latitude !== null); }, message: 'Enter both latitude and longitude, or leave both blank.' }
   }
 }, { _id: false });
 
@@ -125,10 +127,13 @@ const WeatherSchema = new Schema({
     default: null
   },
   source: { type: String, trim: true, default: null },
+  status: { type: String, enum: ['available', 'unavailable'], default: 'unavailable' },
+  lastErrorCode: { type: String, trim: true, default: null },
+  lastAttemptAt: { type: Date, default: null },
   fetchedAt: { type: Date, default: null },
   recordedAt: {
     type: Date,
-    default: Date.now
+    default: null
   }
 }, { _id: false });
 

@@ -320,12 +320,22 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .farm-form__field { display: flex; min-width: 0; flex-direction: column; gap: 6px; margin: 0 0 12px; color: #536455; font-size: 11px; font-weight: 650; }
 .farm-form__field > span i { color: #a4563b; font-style: normal; }
 .farm-form__field input { width: 100%; min-height: 40px; padding: 0 11px; border: 1px solid #dfe3d8; border-radius: 9px; color: #35473a; background: #fff; font-size: 12px; }
+.farm-form__field select { width: 100%; min-height: 40px; padding: 0 9px; border: 1px solid #dfe3d8; border-radius: 9px; color: #35473a; background: #fff; font-size: 12px; }
+.farm-coordinate-format { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 14px; padding: 10px 12px; border: 1px solid #e4e8dc; border-radius: 10px; color: #536455; font-size: 11px; }
+.farm-coordinate-format legend { padding: 0 5px; color: #71806f; font-weight: 650; }
+.farm-coordinate-format label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.farm-coordinate-format input { accent-color: #547144; }
+.farm-coordinate-entry { display: grid; gap: 8px; }
+.farm-coordinate-group { min-width: 0; padding: 11px 12px 2px; border: 1px solid #e8eadf; border-radius: 10px; }
+.farm-coordinate-group > strong { display: block; margin-bottom: 8px; color: #435645; font-size: 11px; }
+.farm-coordinate-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .farm-form__field input[aria-invalid="true"] { border-color: #c77b61; }
 .farm-form__error, .farm-form__hint { color: #a45c43; font-size: 10px; font-weight: 450; }
 .farm-form__hint { color: #8b9689; }
 .farm-form__server-error { margin: 12px 0; padding: 11px; border: 1px solid #ecd9cf; border-radius: 9px; color: #8f4f3c; background: #fff8f3; font-size: 11px; }
 .farm-form__actions { display: flex; justify-content: flex-end; gap: 9px; padding-top: 17px; }
-.farm-detail-weather-error { margin: 0 0 12px; padding: 9px 10px; border: 1px solid #ecd9cf; border-radius: 8px; color: #8f4f3c; background: #fff8f3; font-size: 11px; }
+.farm-detail-weather-error { display: flex; flex-wrap: wrap; gap: 3px; margin: 0 0 12px; padding: 9px 10px; border: 1px solid #ecd9cf; border-radius: 8px; color: #8f4f3c; background: #fff8f3; font-size: 11px; }
+.farm-weather-refresh { margin-top: 14px; }
 .farm-confirm { width: min(100%, 440px); padding: 27px; }
 .farm-confirm__icon { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 13px; color: #9a5948; background: #f8ece5; }
 .farm-confirm h2 { margin-top: 16px; }
@@ -1061,6 +1071,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .farm-dialog__header { padding: 16px; }
   .farm-form { padding: 4px 16px 16px; }
   .farm-form__grid { grid-template-columns: 1fr; gap: 0; }
+  .farm-coordinate-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 10px; }
   .farm-card__actions { grid-template-columns: 1fr 1fr; }
   .farm-detail-grid, .farm-detail-columns .farm-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .farm-detail-columns { grid-template-columns: 1fr; gap: 0; }

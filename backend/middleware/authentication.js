@@ -1,4 +1,4 @@
-const User = require('../db/models/User');
+const authUserService = require('../services/authUserService');
 const farmService = require('../services/farmService');
 const { verifyToken } = require('../services/authTokenService');
 
@@ -12,7 +12,7 @@ async function authenticate(req, res, next) {
   if (!match) return unauthorized(res);
   try {
     const identity = verifyToken(match[1]);
-    const user = await User.findById(identity.id).select('name email').lean();
+    const user = await authUserService.findById(identity.id);
     if (!user) return unauthorized(res);
     req.user = { id: user._id.toString(), name: user.name, email: user.email };
     return next();

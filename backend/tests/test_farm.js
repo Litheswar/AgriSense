@@ -126,14 +126,6 @@ async function runTests() {
         fieldConditions: {
           soilMoisture: 35.0
         },
-        weather: {
-          temperature: 28.5,
-          humidity: 65.0,
-          rainfall: 12.0,
-          recentRainfall: 25.0,
-          rainProbability: 20.0,
-          expectedRainfall: 2.0
-        },
         diseaseContext: {
           detected: false,
           disease: null,
@@ -196,21 +188,27 @@ async function runTests() {
       failed++;
     }
 
-    // Test 4: Invalid humidity / moisture / rain probability rejected (> 100 or < 0)
+    // Test 4: Model bounds remain enforced; browser clients cannot provide weather.
     try {
-      const badEnvData = {
+      const badEnvData = new Farm({
+        ownerId: testUser._id,
         name: 'Invalid Env Farm',
         location: { state: 'Tamil Nadu', district: 'Madurai' },
-        fieldConditions: { soilMoisture: 120.0 }, // Invalid > 100
-        weather: {
-          humidity: 150.0, // Invalid > 100
-          rainProbability: -10.0 // Invalid < 0
-        }
-      };
-      const res = await makeHttpRequest(server, 'POST', '/api/farms', badEnvData);
-      assert(res.status === 400, `Expected HTTP 400, got ${res.status}`);
-      assert(res.body.error.code === 'VALIDATION_ERROR', `Expected VALIDATION_ERROR, got ${res.body.error.code}`);
-      console.log('  [PASS] Test 4: Physical bounds validation (moisture, humidity, rain probability) enforced.');
+        fieldConditions: { soilMoisture: 120.0 },
+        weather: { humidity: 150.0, rainProbability: -10.0 }
+      });
+      let validationError;
+      try {
+        await badEnvData.validate();
+      } catch (error) {
+        validationError = error;
+      }
+      assert(validationError?.name === 'ValidationError'
+        && Boolean(validationError.errors['fieldConditions.soilMoisture'])
+        && Boolean(validationError.errors['weather.humidity'])
+        && Boolean(validationError.errors['weather.rainProbability']),
+      'Expected schema validation to reject invalid soil and weather bounds.');
+      console.log('  [PASS] Test 4: Physical bounds remain enforced by the Farm schema.');
       passed++;
     } catch (e) {
       console.log(`  [FAIL] Test 4: ${e.message}`);
@@ -317,14 +315,6 @@ async function runTests() {
         fieldConditions: {
           soilMoisture: 28.0
         },
-        weather: {
-          temperature: 22.0,
-          humidity: 50.0,
-          rainfall: 0.0,
-          recentRainfall: 5.0,
-          rainProbability: 10.0,
-          expectedRainfall: 0.0
-        },
         diseaseContext: {
           detected: false,
           disease: null,
@@ -346,7 +336,8 @@ async function runTests() {
       assert(shared.soil.ph === 6.8, 'Soil pH mismatch');
       assert(shared.crop.name === 'Wheat', 'Crop name mismatch');
       assert(shared.fieldConditions.soilMoisture === 28.0, 'Soil moisture mismatch');
-      assert(shared.weather.temperature === 22.0, 'Weather temp mismatch');
+      assert(shared.weather.source === 'open-meteo', 'Provider weather source was not stored.');
+      assert(Number.isFinite(shared.weather.temperature), 'Provider temperature was not stored.');
 
       console.log('  [PASS] Test 10: Complete Shared Farm State stored & transformed for AI engines.');
       passed++;

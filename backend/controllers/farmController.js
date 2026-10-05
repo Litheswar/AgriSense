@@ -25,6 +25,7 @@ function sendError(res, err) {
     code === 'INVALID_FARM_ID' ||
     code === 'VALIDATION_ERROR' ||
     code === 'INVALID_INPUT' ||
+    code === 'WEATHER_IS_PROVIDER_MANAGED' ||
     code === 'INSUFFICIENT_FARM_DATA' ||
     code === 'PROHIBITED_OPERATOR' ||
     code === 'CropInferenceError' ||
@@ -42,6 +43,10 @@ function sendError(res, err) {
     status = 400;
   } else if (code.includes('PROVIDER_UNAVAILABLE') || code.includes('PROVIDER_TIMEOUT') || code === 'TIMEOUT') {
     status = 503;
+  } else if (code === 'WEATHER_DATA_UNAVAILABLE' || code === 'WEATHER_PROVIDER_HTTP_ERROR') {
+    status = 503;
+  } else if (code === 'INVALID_WEATHER_RESPONSE' || code === 'MISSING_WEATHER_VARIABLE') {
+    status = 502;
   } else if (code === 'CONFLICT') {
     status = 409;
   }
@@ -51,9 +56,14 @@ function sendError(res, err) {
     INVALID_FARM_ID: 'Invalid farm ID.',
     VALIDATION_ERROR: 'Request data is invalid.',
     INVALID_INPUT: 'Request data is invalid.',
+    WEATHER_IS_PROVIDER_MANAGED: 'Weather values are managed by the farm weather provider.',
     INSUFFICIENT_FARM_DATA: 'Farm data is insufficient for this recommendation.',
     WEATHER_PROVIDER_UNAVAILABLE: 'Weather provider is temporarily unavailable.',
     WEATHER_PROVIDER_TIMEOUT: 'Weather provider timed out.',
+    WEATHER_PROVIDER_HTTP_ERROR: 'The weather provider could not return weather data. Please retry shortly.',
+    INVALID_WEATHER_RESPONSE: 'The weather provider returned invalid weather data. Please retry shortly.',
+    MISSING_WEATHER_VARIABLE: 'The weather provider returned incomplete weather data. Please retry shortly.',
+    WEATHER_DATA_UNAVAILABLE: 'Weather data is unavailable. Crop recommendation requires weather from the farm location. Please try refreshing weather.',
     CONFLICT: 'The request conflicts with the current resource state.'
   };
 
@@ -62,7 +72,11 @@ function sendError(res, err) {
     error: {
       code,
       message: safeMessages[code] || (status === 400 ? 'Request data is invalid.' : 'An unexpected error occurred.'),
-      ...(code === 'INSUFFICIENT_FARM_DATA' && Array.isArray(err.missingFields) ? { missingFields: err.missingFields } : {})
+      ...(code === 'INSUFFICIENT_FARM_DATA' && Array.isArray(err.missingFields) ? { missingFields: err.missingFields } : {}),
+      ...(code === 'WEATHER_DATA_UNAVAILABLE' ? {
+        reasonCode: err.reasonCode || null,
+        weatherNeedsCoordinates: Boolean(err.weatherNeedsCoordinates)
+      } : {})
     }
   });
 }
@@ -85,33 +99,43 @@ exports.refreshFarmWeather = async (req, res) => {
  */
 exports.createFarm = async (req, res) => {
   try {
+    if (Object.prototype.hasOwnProperty.call(req.body || {}, 'weather')) {
+      const err = new Error('Weather values are populated from the configured provider.');
+      err.code = 'WEATHER_IS_PROVIDER_MANAGED';
+      throw err;
+    }
     if (Object.prototype.hasOwnProperty.call(req.body || {}, 'ownerId')) {
       const err = new Error('ownerId is assigned from the authenticated user.');
       err.code = 'INVALID_INPUT';
       throw err;
     }
     const farm = await farmService.createFarm({ ...req.body, ownerId: req.user.id });
-    let weatherStatus = 'NOT_REQUESTED';
+    let weatherStatus = 'unavailable';
+    let weatherReasonCode = 'INSUFFICIENT_LOCATION_DATA';
     const latitude = farm.location?.latitude;
     const longitude = farm.location?.longitude;
     if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
       try {
         await farmWeatherService.refreshWeather(farm._id.toString(), farm);
-        weatherStatus = 'FETCHED';
+        weatherStatus = 'available';
+        weatherReasonCode = null;
       } catch (weatherError) {
         // Farm creation remains valid when a provider is unavailable. The UI can
         // distinguish missing weather and offer a later refresh without inventing data.
-        weatherStatus = 'UNAVAILABLE';
+        weatherStatus = farm.weather?.status || 'unavailable';
+        weatherReasonCode = weatherError.code || 'WEATHER_PROVIDER_UNAVAILABLE';
         console.warn(`[AgriSense Weather] Initial refresh unavailable: ${weatherError.code || weatherError.message}`);
       }
     } else {
-      weatherStatus = 'COORDINATES_REQUIRED';
+      weatherStatus = 'unavailable';
+      weatherReasonCode = 'INSUFFICIENT_LOCATION_DATA';
     }
     return res.status(201).json({
       success: true,
       farm: farm.toObject ? farm.toObject() : farm,
       sharedFarmState: farm.toSharedFarmState ? farm.toSharedFarmState() : undefined,
-      weatherStatus
+      weatherStatus,
+      weatherReasonCode
     });
   } catch (err) {
     return sendError(res, err);
@@ -157,7 +181,30 @@ exports.getSharedFarmState = async (req, res) => {
  */
 exports.getCropRecommendation = async (req, res) => {
   try {
-    const result = await farmCropRecommendationService.getCropRecommendation(req.params.farmId, req.farm.toSharedFarmState());
+    let sharedFarmState = req.farm.toSharedFarmState();
+    if (!farmWeatherService.hasWeatherValues(sharedFarmState.weather)) {
+      const location = sharedFarmState.location || {};
+      const hasCoordinates = Number.isFinite(location.latitude) && location.latitude >= -90 && location.latitude <= 90
+        && Number.isFinite(location.longitude) && location.longitude >= -180 && location.longitude <= 180;
+      if (!hasCoordinates) {
+        const error = new Error('Farm weather is unavailable because valid coordinates have not been recorded.');
+        error.code = 'WEATHER_DATA_UNAVAILABLE';
+        error.reasonCode = 'INSUFFICIENT_LOCATION_DATA';
+        error.weatherNeedsCoordinates = true;
+        throw error;
+      }
+      try {
+        await farmWeatherService.refreshWeather(req.params.farmId, req.farm);
+        sharedFarmState = req.farm.toSharedFarmState();
+      } catch (weatherError) {
+        const error = new Error('Weather could not be retrieved for this farm.');
+        error.code = 'WEATHER_DATA_UNAVAILABLE';
+        error.reasonCode = weatherError.code || 'WEATHER_PROVIDER_UNAVAILABLE';
+        error.cause = weatherError;
+        throw error;
+      }
+    }
+    const result = await farmCropRecommendationService.getCropRecommendation(req.params.farmId, sharedFarmState);
     return res.status(200).json(result);
   } catch (err) {
     return sendError(res, err);
@@ -282,16 +329,37 @@ exports.getFarmEvaluation = async (req, res) => {
  */
 exports.updateFarm = async (req, res) => {
   try {
+    if (Object.prototype.hasOwnProperty.call(req.body || {}, 'weather')) {
+      const err = new Error('Weather values are populated from the configured provider.');
+      err.code = 'WEATHER_IS_PROVIDER_MANAGED';
+      throw err;
+    }
     if (Object.prototype.hasOwnProperty.call(req.body || {}, 'ownerId')) {
       const err = new Error('ownerId cannot be changed.');
       err.code = 'INVALID_INPUT';
       throw err;
     }
     const farm = await farmService.updateFarm(req.params.farmId, req.body, req.farm);
+    let weatherStatus = farm.weather?.status || 'unavailable';
+    let weatherReasonCode = farm.weather?.lastErrorCode || null;
+    const latitude = farm.location?.latitude;
+    const longitude = farm.location?.longitude;
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+      try {
+        await farmWeatherService.refreshWeather(farm._id.toString(), farm);
+        weatherStatus = 'available';
+        weatherReasonCode = null;
+      } catch (weatherError) {
+        weatherStatus = farm.weather?.status || 'unavailable';
+        console.warn('[AgriSense Weather] Farm update saved; weather refresh is pending', JSON.stringify({ code: weatherError.code || 'UNKNOWN' }));
+      }
+    }
     return res.status(200).json({
       success: true,
       farm: farm.toObject ? farm.toObject() : farm,
-      sharedFarmState: farm.toSharedFarmState ? farm.toSharedFarmState() : undefined
+      sharedFarmState: farm.toSharedFarmState ? farm.toSharedFarmState() : undefined,
+      weatherStatus,
+      weatherReasonCode
     });
   } catch (err) {
     return sendError(res, err);

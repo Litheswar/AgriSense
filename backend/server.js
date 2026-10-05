@@ -15,10 +15,14 @@ const app = express();
 
 // JWTs are sent in the Authorization header; browser cookies are not used.
 // Permit same-origin/non-browser requests and explicitly configured frontend origins.
-const allowedOrigins = new Set(
-  (process.env.FRONTEND_ORIGIN || 'http://localhost:5173')
-    .split(',').map(origin => origin.trim()).filter(Boolean)
-);
+const configuredOrigins = (process.env.FRONTEND_ORIGIN || 'http://localhost:5173')
+  .split(',').map(origin => origin.trim()).filter(Boolean);
+// Vite is commonly opened as either localhost or 127.0.0.1. Treat those two
+// loopback names as equivalent for the default local development origin only.
+const allowedOrigins = new Set(configuredOrigins);
+if (!process.env.FRONTEND_ORIGIN) {
+  allowedOrigins.add('http://127.0.0.1:5173');
+}
 app.use(cors({
   origin(origin, callback) {
     if (!origin || allowedOrigins.has(origin)) return callback(null, true);
@@ -95,15 +99,16 @@ app.use((err, req, res, next) => {
 // Start listening if run directly
 if (require.main === module) {
   const PORT = config.port;
-  connectDB().then(() => {
-    app.listen(PORT, () => {
-      console.log(`===========================================================`);
-      console.log(`  AgriSense Backend Server running on http://localhost:${PORT}`);
-      console.log(`  AI Health Check: http://localhost:${PORT}/api/ai/health`);
-      console.log(`  Farm State API: http://localhost:${PORT}/api/farms`);
-      console.log(`===========================================================`);
-    });
+  app.listen(PORT, () => {
+    console.log(`===========================================================`);
+    console.log(`  AgriSense Backend Server running on http://localhost:${PORT}`);
+    console.log(`  AI Health Check: http://localhost:${PORT}/api/ai/health`);
+    console.log(`  Farm State API: http://localhost:${PORT}/api/farms`);
+    console.log(`===========================================================`);
   });
+  // Database DNS or network failures must not prevent the API from starting.
+  // Auth endpoints retry the connection and return a clear 503 while it is down.
+  connectDB().catch(error => console.warn('[AgriSense DB Warning] Initial connection attempt failed:', error.message));
 }
 
 module.exports = app;

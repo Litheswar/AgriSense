@@ -17,7 +17,7 @@ function request(server, method, path, token) {
   });
 }
 async function run() {
-  let server; let connected = false; let user; let farm; let token; let farmCount; let userCount;
+  let server; let connected = false; let user; let farm; let cropFarm; let token; let farmCount; let userCount;
   try {
     connected = await connectDB();
     assert(connected, 'MongoDB Atlas connection unavailable');
@@ -48,12 +48,28 @@ async function run() {
     const state = await request(server, 'GET', `/api/farms/${farmId}/shared-state`, token); assert.equal(state.status, 200); assert.equal(state.body.sharedFarmState.weather.source, 'open-meteo');
     const irrigation = await request(server, 'GET', `/api/farms/${farmId}/irrigation`, token); assert.equal(irrigation.status, 200, JSON.stringify(irrigation.body.error)); assert.equal(irrigation.body.engineInput.temperature, refresh.body.weather.temperature); assert.equal(irrigation.body.engineInput.expected_rainfall, refresh.body.weather.expectedRainfall);
     const disease = await request(server, 'GET', `/api/farms/${farmId}/disease-risk`, token); assert.equal(disease.status, 200, JSON.stringify(disease.body.error)); assert.equal(disease.body.engineInput.temperature, refresh.body.weather.temperature); assert.equal(disease.body.engineInput.recent_rainfall, refresh.body.weather.recentRainfall);
+
+    cropFarm = await Farm.create({
+      ownerId: user._id,
+      name: 'Temporary crop weather integration farm',
+      location: { state: 'Karnataka', district: 'Kolar', latitude: 12.9, longitude: 77.5 },
+      soil: { nitrogen: 80, phosphorus: 40, potassium: 40, ph: 6.5 }
+    });
+    const crop = await request(server, 'GET', `/api/farms/${cropFarm._id}/crop-recommendation`, token);
+    assert.equal(crop.status, 200, JSON.stringify(crop.body.error));
+    assert.deepStrictEqual(Object.keys(crop.body.modelInput), ['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']);
+    assert.equal(crop.body.sharedFarmState.weather.source, 'open-meteo');
+    for (const key of ['temperature', 'humidity', 'rainfall']) assert.equal(typeof crop.body.modelInput[key], 'number', `crop input ${key} was not numeric`);
+    const cropFarmReadback = await Farm.findById(cropFarm._id).lean();
+    assert.equal(cropFarmReadback.weather.source, 'open-meteo', 'auto-fetched weather must be persisted before recommendation');
     console.log('LIVE ATLAS + OPEN-METEO: PASS');
     console.log('Provider: Open-Meteo; persisted one Farm.weather refresh; unrelated Farm fields unchanged.');
     console.log(`Weather (C, %, mm): temperature=${refresh.body.weather.temperature}, humidity=${refresh.body.weather.humidity}, currentRain=${refresh.body.weather.rainfall}, recent24h=${refresh.body.weather.recentRainfall}, next24h=${refresh.body.weather.expectedRainfall}, maxHourlyRainProbability=${refresh.body.weather.rainProbability}`);
     console.log('Read-back: weather endpoint and Shared Farm State PASS; irrigation PASS; disease risk PASS.');
+    console.log(`Crop flow: missing stored weather auto-refreshed and persisted before model input (${crop.body.recommendation.predicted_crop}).`);
   } finally {
     if (server) await new Promise(resolve => server.close(resolve));
+    if (cropFarm && user) await Farm.deleteOne({ _id: cropFarm._id, ownerId: user._id });
     if (farm && user) await Farm.deleteOne({ _id: farm._id, ownerId: user._id });
     if (user) await User.deleteOne({ _id: user._id });
     if (connected) {
