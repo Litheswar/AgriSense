@@ -99,16 +99,23 @@ app.use((err, req, res, next) => {
 // Start listening if run directly
 if (require.main === module) {
   const PORT = config.port;
-  app.listen(PORT, () => {
-    console.log(`===========================================================`);
-    console.log(`  AgriSense Backend Server running on http://localhost:${PORT}`);
-    console.log(`  AI Health Check: http://localhost:${PORT}/api/ai/health`);
-    console.log(`  Farm State API: http://localhost:${PORT}/api/farms`);
-    console.log(`===========================================================`);
+  connectDB().then((connected) => {
+    if (!connected) {
+      console.error('[AgriSense Startup] MongoDB connection failed. Server will not accept requests because Farm persistence is unavailable.');
+      process.exitCode = 1;
+      return;
+    }
+    app.listen(PORT, () => {
+      console.log(`===========================================================`);
+      console.log(`  AgriSense Backend Server running on http://localhost:${PORT}`);
+      console.log(`  AI Health Check: http://localhost:${PORT}/api/ai/health`);
+      console.log(`  Farm State API: http://localhost:${PORT}/api/farms`);
+      console.log(`===========================================================`);
+    });
+  }).catch(error => {
+    console.error('[AgriSense Startup] Database initialization failed. Server will not accept requests:', error.message);
+    process.exitCode = 1;
   });
-  // Database DNS or network failures must not prevent the API from starting.
-  // Auth endpoints retry the connection and return a clear 503 while it is down.
-  connectDB().catch(error => console.warn('[AgriSense DB Warning] Initial connection attempt failed:', error.message));
 }
 
 module.exports = app;

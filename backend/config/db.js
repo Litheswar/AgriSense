@@ -50,7 +50,7 @@ async function connectDB(uri = null) {
     if (error.cause && error.cause.message) {
       console.warn(`[AgriSense DB Cause] ${sanitizeUri(error.cause.message)}`);
     }
-    console.warn(`[AgriSense DB Warning] Application will run with in-memory repository active for farm state.`);
+    console.warn(`[AgriSense DB Warning] MongoDB is unavailable. Tests may explicitly enable the in-memory repository; normal server startup must remain stopped.`);
     isConnected = false;
     return false;
   }
