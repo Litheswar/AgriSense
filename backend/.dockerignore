@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+node_modules/
+npm-debug.log*
+*.log
+.pytest_cache/
+__pycache__/
+*.py[cod]
+.git/
+.github/
+tmp/
+tests/
+models/*/dataset/
+models/*/training/
+models/*/preprocessing/
+models/*/evaluation/

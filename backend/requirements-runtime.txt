@@ -1,0 +1,11 @@
+# AgriSense production inference runtime.
+# Versions reflect the verified local inference environment; Linux/Render
+# compatibility and free-tier memory still require staging validation.
+tensorflow==2.21.0
+keras==3.14.1
+numpy==2.4.6
+pandas==3.0.3
+scipy==1.17.1
+scikit-learn==1.9.0
+joblib==1.5.3
+Pillow==12.2.0
